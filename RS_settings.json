@@ -1,0 +1,20 @@
+{
+    "general": [
+        {
+            "single_mode": false,
+            "continuous_mode": true
+        }
+    ],
+    "moebooru": [
+        {
+            "tags": "order:random animated",
+            "limit": "2"
+        }
+    ],
+    "facebook": [
+        {
+            "access_token": "facebook access token",
+            "page_id": "facebook page id"
+        }
+    ]
+}
