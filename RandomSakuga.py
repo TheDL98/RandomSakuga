@@ -10,8 +10,8 @@ import requests
 import json
 import funcs
 
-
-print("RandomSakuga V1.12\n")
+version = "V1.13-dev"
+print(f"RandomSakuga {version}\n")
 
 # Load settings
 with open("RS_settings.json") as f:
@@ -52,8 +52,11 @@ def post():
         # Free resources
         temp_file.close()
     fb_comment_id = funcs.fb_tags_comment(fb_access, fb_post_id, sb_post["tags"])
-    print(f"\npost id: {fb_post_id}")
-    print(f"comment id: {fb_comment_id}")
+    post_feedback = (
+        f"post({fb_post_id}) on {strftime('%d/%m/%Y, %H:%M:%S', localtime())}"
+    )
+    print(post_feedback)
+    print(len(post_feedback) * "-" + "\n")
 
 
 # One post when the script starts if set to True
