@@ -1,7 +1,19 @@
-#############################################################################
-# Copyright (C) Random Sakuga - All Rights Reserved                         #
-# Written by Ahmed Alkadhim <ahmedalkadhim20001@gmail.com>, January 2021    #
-#############################################################################
+# Copyright (C) 2021 Ahmed Alkadhim
+#
+# This file is part of Random Sakuga.
+#
+# Random Sakuga is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Random Sakuga is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Random Sakuga.  If not, see <http://www.gnu.org/licenses/>.
 
 from schedule import every, run_pending
 from time import strftime, localtime, sleep
