@@ -80,37 +80,47 @@ def jikan_mal_search(media: str, tags: dict):
     if media and not ("western" in tags):
         jikan_payload = {"q": media, "limit": 1}
         jikan_url = "https://api.jikan.moe/v3/search/anime"
-        jikan_response = requests.get(jikan_url, jikan_payload)
+        try:
+            jikan_response = requests.get(jikan_url, jikan_payload)
+            if not jikan_response.ok:
+                raise requests.HTTPError(
+                    "{0[type]}: {0[status]}\n\t{0[message]}".format(
+                        jikan_response.json()
+                    )
+                )
+        except requests.HTTPError as e:
+            print(e)
+            return None
         mal_result = jikan_response.json()["results"][0]
         return mal_result
     return None
 
 
 # Create the message to be posted on FB
-def format_fb_message(
-    sb_post_id: str,
-    sb_artists: list,
-    sb_media: str,
+def create_fb_post_payload(
+    sb_post_id: str, sb_artists: list, sb_media: str, access_token: str
 ):
+    # Message
     sb_artists = ", ".join(sb_artists)
     message = f"Key animation: {sb_artists}"
     if sb_media is not None:
         message += f"\nTV/Movie/Other: {sb_media}"
     message += f"\nhttps://www.sakugabooru.com/post/show/{sb_post_id}"
-    return message
-
-
-# Create a Facebook post
-def fb_video_post(page_id: int, access_token: str, file: bytes, message: str, title: str):
-    fb_post_url = f"https://graph.facebook.com/{page_id}/videos"
-    fb_post_files = {"source": file}
-    fb_post_payload = {
+    # Title of the video
+    title = f"Sakugabooru post #{sb_post_id}"
+    payload = {
         "access_token": access_token,
         "description": message.encode("UTF-8", "strict"),
         "content_category": "ENTERTAINMENT",
         "title": title,
     }
-    fb_post_response = requests.post(fb_post_url, fb_post_payload, files=fb_post_files)
+    return payload
+
+
+# Create a Facebook video post
+def fb_video_post(page_id: str, file: bytes, payload: str):
+    fb_post_url = f"https://graph.facebook.com/{page_id}/videos"
+    fb_post_response = requests.post(fb_post_url, payload, files={"source": file})
     return int(fb_post_response.json()["id"])
 
 

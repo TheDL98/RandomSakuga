@@ -37,7 +37,7 @@ sb_tags = data["moebooru"][0]["tags"]
 sb_limit = data["moebooru"][0]["limit"]
 
 # facebook information
-fb_access = data["facebook"][0]["access_token"]
+fb_access_token = data["facebook"][0]["access_token"]
 fb_page_id = data["facebook"][0]["page_id"]
 
 
@@ -46,9 +46,7 @@ def post():
     tag_summary_list = funcs.tag_summary()
     artist, media = funcs.get_sb_artist_and_media(sb_post["tags"], tag_summary_list)
     mal_info = funcs.jikan_mal_search(media, sb_post["tags"])
-    fb_message = funcs.format_fb_message(sb_post["id"], artist, media)
-    # Title of the video
-    title = "Sakugabooru post #" + str(sb_post["id"])
+    fb_payload = funcs.create_fb_post_payload(sb_post["id"], artist, media, fb_access_token)
     try:
         # Create a temporary file
         temp_file = NamedTemporaryFile()
@@ -57,12 +55,12 @@ def post():
         file_data = requests.get(sb_post["file_url"], allow_redirects=True)
         temp_file.write(file_data.content)
         temp_file.seek(0)
-        fb_post_id = funcs.fb_video_post(fb_page_id, fb_access, temp_file, fb_message, title)
+        fb_post_id = funcs.fb_video_post(fb_page_id, temp_file, fb_payload)
     finally:
         # Free resources
         temp_file.close()
     if mal_info:
-        fb_comment_id = funcs.fb_MAL_comment(fb_access, fb_post_id, mal_info)
+        fb_comment_id = funcs.fb_MAL_comment(fb_access_token, fb_post_id, mal_info)
     post_feedback = (
         f"post({fb_post_id}) on {strftime('%d/%m/%Y, %H:%M:%S', localtime())}"
     )
