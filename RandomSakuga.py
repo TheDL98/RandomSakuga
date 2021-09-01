@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Random Sakuga.  If not, see <http://www.gnu.org/licenses/>.
 
-from schedule import every, run_pending
 from time import strftime, localtime, sleep
 from tempfile import NamedTemporaryFile
 import requests
@@ -23,7 +22,7 @@ import json
 import funcs
 
 version = "V1.13-dev"
-print(f"RandomSakuga {version}\n")
+print(f"RandomSakuga {version}\n\n")
 
 # Load settings
 with open("RS_settings.json") as f:
@@ -31,7 +30,7 @@ with open("RS_settings.json") as f:
 
 # general setting
 single_mode = data["general"][0]["single_mode"]
-continuous_mode = data["general"][0]["continuous_mode"]
+schedule_mode = data["general"][0]["continuous_mode"]
 
 # Sakugabooru information
 sb_tags = data["moebooru"][0]["tags"]
@@ -75,16 +74,17 @@ def post():
 if single_mode:
     post()
 
-# Continuous loop setup
-if continuous_mode:
-    every().day.at("00:00").do(post)
-    every().day.at("06:00").do(post)
-    every().day.at("12:00").do(post)
-    every().day.at("18:00").do(post)
-
+# Scheduler setup
+if schedule_mode:
     while True:
         print(strftime("%H:%M", localtime()), end="\r")
-        run_pending()
+
+        # Scheduler
+        # Post every six hours at (00:00, 06:00, ...)
+        hour_ = localtime().tm_hour % 6
+        minute = localtime().tm_min
+        if hour_ == 0 and minute == 0:
+            post()
         sleep(60)  # wait one minute
 
 
