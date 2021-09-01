@@ -45,8 +45,7 @@ def post():
     sb_post = funcs.get_sb_post(sb_limit, sb_tags)
     tag_summary_list = funcs.tag_summary()
     artist, media = funcs.get_sb_artist_and_media(sb_post["tags"], tag_summary_list)
-    # Disable until I find better solution
-    # * mal_info = funcs.jikan_mal_search(media, sb_post["tags"])
+    mal_info = funcs.jikan_mal_search(media, sb_post["tags"])
     fb_message = funcs.format_fb_message(sb_post["id"], artist, media)
     # Title of the video
     title = "Sakugabooru post #" + str(sb_post["id"])
@@ -58,11 +57,12 @@ def post():
         file_data = requests.get(sb_post["file_url"], allow_redirects=True)
         temp_file.write(file_data.content)
         temp_file.seek(0)
-        fb_post_id = funcs.fb_post(fb_page_id, fb_access, temp_file, fb_message, title)
+        fb_post_id = funcs.fb_video_post(fb_page_id, fb_access, temp_file, fb_message, title)
     finally:
         # Free resources
         temp_file.close()
-    fb_comment_id = funcs.fb_tags_comment(fb_access, fb_post_id, sb_post["tags"])
+    if mal_info:
+        fb_comment_id = funcs.fb_MAL_comment(fb_access, fb_post_id, mal_info)
     post_feedback = (
         f"post({fb_post_id}) on {strftime('%d/%m/%Y, %H:%M:%S', localtime())}"
     )
@@ -88,7 +88,5 @@ if schedule_mode:
         sleep(60)  # wait one minute
 
 
-# TODO: Maybe list alternative names of a media.
+# TODO: Logging
 # TODO: Maybe post a comment with child sakugabooru posts links.
-# TODO: possibly move Jikan result to the comment
-# TODO: Generate settings file if none exist

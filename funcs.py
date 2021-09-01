@@ -77,13 +77,13 @@ def get_sb_artist_and_media(tags: str, tag_summary_list: list):
 
 # Use the Jikan unofficial MyAnimeList API to search for anime shows
 def jikan_mal_search(media: str, tags: dict):
-    if not ("western" in tags):
+    if media and not ("western" in tags):
         jikan_payload = {"q": media, "limit": 1}
         jikan_url = "https://api.jikan.moe/v3/search/anime"
         jikan_response = requests.get(jikan_url, jikan_payload)
         mal_result = jikan_response.json()["results"][0]
         return mal_result
-    return False
+    return None
 
 
 # Create the message to be posted on FB
@@ -91,34 +91,17 @@ def format_fb_message(
     sb_post_id: str,
     sb_artists: list,
     sb_media: str,
-    mal_info: str = False,
 ):
-    if mal_info:
-        mal_id = mal_info["mal_id"]
-        mal_link = f"https://myanimelist.net/anime/{mal_id}"
-        media_type = mal_info["type"]
-
     sb_artists = ", ".join(sb_artists)
     message = f"Key animation: {sb_artists}"
     if sb_media is not None:
-        if mal_info:
-            if media_type == "TV":
-                message += f"\n{media_type} show: "
-            elif media_type == "Music":
-                message += f"\n{media_type} video: "
-            else:
-                message += f"\n{media_type}: "
-        else:
-            message += f"\nTV/Movie/Other: "
-        message += sb_media
+        message += f"\nTV/Movie/Other: {sb_media}"
     message += f"\nhttps://www.sakugabooru.com/post/show/{sb_post_id}"
-    if mal_info:
-        message += f"\n{mal_link}"
     return message
 
 
 # Create a Facebook post
-def fb_post(page_id: int, access_token: str, file: bytes, message: str, title: str):
+def fb_video_post(page_id: int, access_token: str, file: bytes, message: str, title: str):
     fb_post_url = f"https://graph.facebook.com/{page_id}/videos"
     fb_post_files = {"source": file}
     fb_post_payload = {
@@ -132,9 +115,11 @@ def fb_post(page_id: int, access_token: str, file: bytes, message: str, title: s
 
 
 # Create an FB comment with all the tags
-def fb_tags_comment(access_token: str, post_id: int, tags: str):
-    tags = tags.replace(" ", ", ")
+def fb_MAL_comment(access_token: str, post_id: int, mal_info: str):
+    mal_id = mal_info["mal_id"]
+    mal_link = f"Possible MAL link: https://myanimelist.net/anime/{mal_id}"
+    media_type = mal_info["type"]
     fb_comment_url = f"https://graph.facebook.com/{post_id}/comments"
-    fb_comment_payload = {"access_token": access_token, "message": tags}
+    fb_comment_payload = {"access_token": access_token, "message": mal_link}
     fb_comment_response = requests.post(fb_comment_url, fb_comment_payload)
     return fb_comment_response.json()["id"]

@@ -14,7 +14,7 @@
     "facebook": [
         {
             "access_token": "facebook access token",
-            "page_id": "facebook page id"
+            "page_id": "integer facebook page id"
         }
     ]
 }
