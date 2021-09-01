@@ -21,7 +21,7 @@ import requests
 import json
 import funcs
 
-version = "V1.13-dev"
+version = "V1.13"
 print(f"RandomSakuga {version}\n\n")
 
 # Load settings
