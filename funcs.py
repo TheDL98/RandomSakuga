@@ -53,7 +53,7 @@ def tag_summary():
 
 
 # Return the artist and the media names
-def get_sb_artist_and_media(tags: str, tag_summary_list: list):
+def get_artist_and_media(tags: str, tag_summary_list: list):
     tags = tags.split(" ")
     artist = []
     media: str = None
@@ -78,21 +78,21 @@ def get_sb_artist_and_media(tags: str, tag_summary_list: list):
 # Use the Jikan unofficial MyAnimeList API to search for anime shows
 def jikan_mal_search(media: str, tags: dict):
     if media and not ("western" in tags):
-        jikan_payload = {"q": media, "limit": 1}
-        jikan_url = "https://api.jikan.moe/v3/search/anime"
+        payload = {"q": media, "limit": 1}
+        url = "https://api.jikan.moe/v3/search/anime"
         try:
-            jikan_response = requests.get(jikan_url, jikan_payload)
+            jikan_response = requests.get(url, payload)
             if not jikan_response.ok:
                 raise requests.HTTPError(
                     "{0[type]}: {0[status]}\n\t{0[message]}".format(
                         jikan_response.json()
                     )
                 )
+            mal_result = jikan_response.json()["results"][0]
+            return mal_result
         except requests.HTTPError as e:
             print(e)
             return None
-        mal_result = jikan_response.json()["results"][0]
-        return mal_result
     return None
 
 
@@ -119,16 +119,24 @@ def create_fb_post_payload(
 
 # Create a Facebook video post
 def fb_video_post(page_id: str, file: bytes, payload: str):
-    fb_post_url = f"https://graph.facebook.com/{page_id}/videos"
-    fb_post_response = requests.post(fb_post_url, payload, files={"source": file})
-    return int(fb_post_response.json()["id"])
+    url = f"https://graph.facebook.com/{page_id}/videos"
+    try:
+        fb_post_response = requests.post(url, payload, files={"source": file})
+        if not fb_post_response.ok:
+            raise requests.HTTPError(
+                "{0[type]}: {0[code]}\n\t{0[message]}".format(
+                    fb_post_response.json()["error"]
+                )
+            )
+        return int(fb_post_response.json()["id"])
+    except requests.HTTPError as e:
+        print(e)
+        return None
 
 
 # Create an FB comment with all the tags
-def fb_MAL_comment(access_token: str, post_id: int, mal_info: str):
-    mal_id = mal_info["mal_id"]
+def fb_MAL_comment(access_token: str, post_id: int, mal_id: str):
     mal_link = f"Possible MAL link: https://myanimelist.net/anime/{mal_id}"
-    media_type = mal_info["type"]
     fb_comment_url = f"https://graph.facebook.com/{post_id}/comments"
     fb_comment_payload = {"access_token": access_token, "message": mal_link}
     fb_comment_response = requests.post(fb_comment_url, fb_comment_payload)

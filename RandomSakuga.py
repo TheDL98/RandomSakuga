@@ -21,7 +21,7 @@ import requests
 import json
 import funcs
 
-version = "V1.13-dev"
+version = "V1.14-dev"
 print(f"RandomSakuga {version}\n\n")
 
 # Load settings
@@ -44,28 +44,28 @@ fb_page_id = data["facebook"][0]["page_id"]
 def post():
     sb_post = funcs.get_sb_post(sb_limit, sb_tags)
     tag_summary_list = funcs.tag_summary()
-    artist, media = funcs.get_sb_artist_and_media(sb_post["tags"], tag_summary_list)
+    artist, media = funcs.get_artist_and_media(sb_post["tags"], tag_summary_list)
     mal_info = funcs.jikan_mal_search(media, sb_post["tags"])
-    fb_payload = funcs.create_fb_post_payload(sb_post["id"], artist, media, fb_access_token)
-    try:
-        # Create a temporary file
-        temp_file = NamedTemporaryFile()
-        temp_file.name = "dl_file." + sb_post["file_ext"]
+    fb_payload = funcs.create_fb_post_payload(
+        sb_post["id"], artist, media, fb_access_token
+    )
+
+    # Create a temporary file
+    with NamedTemporaryFile() as tf:
+        tf.name = "dl_file." + sb_post["file_ext"]
         # Download data into the temp file
         file_data = requests.get(sb_post["file_url"], allow_redirects=True)
-        temp_file.write(file_data.content)
-        temp_file.seek(0)
-        fb_post_id = funcs.fb_video_post(fb_page_id, temp_file, fb_payload)
-    finally:
-        # Free resources
-        temp_file.close()
-    if mal_info:
-        fb_comment_id = funcs.fb_MAL_comment(fb_access_token, fb_post_id, mal_info)
-    post_feedback = (
-        f"post({fb_post_id}) on {strftime('%d/%m/%Y, %H:%M:%S', localtime())}"
-    )
-    print(post_feedback)
-    print(len(post_feedback) * "-" + "\n")
+        tf.write(file_data.content)
+        tf.seek(0)
+        fb_post_id = funcs.fb_video_post(fb_page_id, tf, fb_payload)
+    if fb_post_id:
+        if mal_info:
+            funcs.fb_MAL_comment(fb_access_token, fb_post_id, mal_info["mal_id"])
+        post_feedback = (
+            f"post({fb_post_id}) on {strftime('%d/%m/%Y, %H:%M:%S', localtime())}"
+        )
+        print(post_feedback)
+        print(len(post_feedback) * "-" + "\n")
 
 
 # One post when the script starts if set to True
