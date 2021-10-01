@@ -68,16 +68,16 @@ def get_artist_and_media(tags: str, tag_summary_list: list):
                         artist.append("Unknown Animator/s")
                 elif summary_tag[0] == "3":
                     # Try to favor media tags without "series" in them
-                    if not ("series" in tag):
+                    if "series" not in tag:
                         media = tag.replace("_", " ").title()
-                    elif not (media):
+                    elif not media:
                         media = tag.replace("_", " ").title()
     return artist, media
 
 
 # Use the Jikan unofficial MyAnimeList API to search for anime shows
 def jikan_mal_search(media: str, tags: dict):
-    if media and not ("western" in tags):
+    if media and "western" not in tags:
         payload = {"q": media, "limit": 1}
         url = "https://api.jikan.moe/v3/search/anime"
         try:
