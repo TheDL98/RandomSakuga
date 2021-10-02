@@ -23,7 +23,7 @@ import json
 import funcs
 
 version = "V1.14-dev"
-print(f"RandomSakuga {version}", end="\n\n\n")
+print(f"RandomSakuga {version}", end="\n\n")
 
 # Load settings
 with open("RS_settings.json") as f:
@@ -69,24 +69,26 @@ def post():
         print(len(post_feedback) * "-", end="\n\n")
 
 
-# One post when the script starts if set to True
-if single_mode:
-    post()
+try:
+    # One post when the script starts if set to True
+    if single_mode:
+        post()
 
-# Scheduler setup
-if schedule_mode:
-    while True:
-        stdout.write('\033[2K\033[1G') # Erase and go to beginning of line
-        print(strftime("%H:%M", localtime()), end="\r")
+    # Scheduler setup
+    if schedule_mode:
+        while True:
+            stdout.write('\033[2K\033[1G') # Erase and go to beginning of line
+            print(strftime("%H:%M", localtime()), end="\r")
 
-        # Scheduler
-        # Post every six hours at (00:00, 06:00, ...)
-        hour_ = localtime().tm_hour % 6
-        minute = localtime().tm_min
-        if hour_ == 0 and minute == 0:
-            post()
-        sleep(60)  # wait one minute
-
+            # Scheduler
+            # Post every six hours at (00:00, 06:00, ...)
+            hour_ = localtime().tm_hour % 6
+            minute = localtime().tm_min
+            if hour_ == 0 and minute == 0:
+                post()
+            sleep(60)  # wait one minute
+except KeyboardInterrupt:
+    print("\nInterrupt signal received!")
 
 # TODO: Logging
 # TODO: Maybe post a comment with child sakugabooru posts links.
