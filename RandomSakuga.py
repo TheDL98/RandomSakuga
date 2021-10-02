@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Random Sakuga.  If not, see <http://www.gnu.org/licenses/>.
 
+from sys import stdout
 from time import strftime, localtime, sleep
 from tempfile import NamedTemporaryFile
 import requests
@@ -75,6 +76,7 @@ if single_mode:
 # Scheduler setup
 if schedule_mode:
     while True:
+        stdout.write('\033[2K\033[1G') # Erase and go to beginning of line
         print(strftime("%H:%M", localtime()), end="\r")
 
         # Scheduler
