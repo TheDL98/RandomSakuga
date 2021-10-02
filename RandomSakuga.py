@@ -22,7 +22,7 @@ import json
 import funcs
 
 version = "V1.14-dev"
-print(f"RandomSakuga {version}\n\n")
+print(f"RandomSakuga {version}", end="\n\n\n")
 
 # Load settings
 with open("RS_settings.json") as f:
@@ -65,7 +65,7 @@ def post():
             f"post({fb_post_id}) on {strftime('%d/%m/%Y, %H:%M:%S', localtime())}"
         )
         print(post_feedback)
-        print(len(post_feedback) * "-" + "\n")
+        print(len(post_feedback) * "-", end="\n\n")
 
 
 # One post when the script starts if set to True
