@@ -25,6 +25,7 @@ import funcs
 version = "V1.14-dev"
 print(f"RandomSakuga {version}", end="\n\n")
 
+
 # Load settings
 with open("RS_settings.json") as f:
     data = json.load(f)
@@ -42,21 +43,24 @@ fb_access_token = data["facebook"][0]["access_token"]
 fb_page_id = data["facebook"][0]["page_id"]
 
 
+# Global variables
+tag_summary_dict = {"version": None, "tags": []}
+
+
 def post():
+    global tag_summary_dict
     sb_post = funcs.get_sb_post(sb_limit, sb_tags)
-    tag_summary_list = funcs.tag_summary()
-    artist, media = funcs.get_artist_and_media(sb_post["tags"], tag_summary_list)
+    tag_summary_dict = funcs.tag_summary(tag_summary_dict)
+    artist, media = funcs.artist_and_media(sb_post["tags"], tag_summary_dict["tags"])
     mal_info = funcs.jikan_mal_search(media, sb_post["tags"])
     fb_payload = funcs.create_fb_post_payload(
         sb_post["id"], artist, media, fb_access_token
     )
-
+    temp_file_data = requests.get(sb_post["file_url"])
     # Create a temporary file
     with NamedTemporaryFile() as tf:
         tf.name = "dl_file." + sb_post["file_ext"]
-        # Download data into the temp file
-        file_data = requests.get(sb_post["file_url"], allow_redirects=True)
-        tf.write(file_data.content)
+        tf.write(temp_file_data.content)
         tf.seek(0)
         fb_post_id = funcs.fb_video_post(fb_page_id, tf, fb_payload)
     if fb_post_id:
@@ -73,11 +77,12 @@ try:
     # One post when the script starts if set to True
     if single_mode:
         post()
+        post()
 
     # Scheduler setup
     if schedule_mode:
         while True:
-            stdout.write('\033[2K\033[1G') # Erase and go to beginning of line
+            stdout.write("\033[2K\033[1G")  # Erase and go to beginning of line
             print(strftime("%H:%M", localtime()), end="\r")
 
             # Scheduler
@@ -87,7 +92,7 @@ try:
             if hour_ == 0 and minute == 0:
                 post()
             sleep(60)  # wait one minute
-except KeyboardInterrupt:
+except KeyboardInterrupt:  # ! PyInstaller doesn't handle this well (PyInstaller #3646)
     print("\nInterrupt signal received!")
 
 # TODO: Logging

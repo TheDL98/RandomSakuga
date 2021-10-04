@@ -17,10 +17,6 @@
 
 import requests
 
-# Global variables
-tag_summary_version: int = None
-tag_summary_list: list = None
-
 
 def get_sb_post(limit: int, tags: str):
     # Get random posts from Sakugabooru
@@ -37,23 +33,21 @@ def get_sb_post(limit: int, tags: str):
     return high_post
 
 
-def tag_summary():
-    global tag_summary_version
-    global tag_summary_list
+def tag_summary(tag_summary_dict):
     # Request a summary json of all the tags on the site and convert it to a list
     url = "https://www.sakugabooru.com/tag/summary.json"
     tag_summary: dict = requests.get(url)
-    if tag_summary_version != tag_summary.json()["version"]:
-        tag_summary_version = tag_summary.json()["version"]
-        tag_summary_list = tag_summary.json()["data"].split(" ")
-        for i in range(len(tag_summary_list)):
-            tag_summary_list[i] = tag_summary_list[i].split("`")
-            tag_summary_list[i].remove("")
-    return tag_summary_list
+    if tag_summary_dict["version"] != tag_summary.json()["version"]:
+        tag_summary_dict["version"] = tag_summary.json()["version"]
+        tag_summary_dict["tags"] = tag_summary.json()["data"].split(" ")
+        for i in range(len(tag_summary_dict["tags"])):
+            tag_summary_dict["tags"][i] = tag_summary_dict["tags"][i].split("`")
+            tag_summary_dict["tags"][i].remove("")
+    return tag_summary_dict
 
 
 # Return the artist and the media names
-def get_artist_and_media(tags: str, tag_summary_list: list):
+def artist_and_media(tags: str, tag_summary_list: list):
     tags = tags.split(" ")
     artist = []
     media: str = None
