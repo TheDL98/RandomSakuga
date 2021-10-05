@@ -19,27 +19,44 @@ from sys import stdout
 from time import strftime, localtime, sleep
 from tempfile import NamedTemporaryFile
 import requests
+import logging
 import json
 import funcs
 
-version = "V1.14-dev"
+version = "V1.15-dev"
 print(f"RandomSakuga {version}", end="\n\n")
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+formatter = logging.Formatter("%(levelname)s<%(asctime)s>%(module)s:%(message)s", "%Y-%m-%d %H:%M:%S")
+file_handler = logging.FileHandler("RandomSakuga.log")
+file_handler.setLevel(logging.INFO)
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
 
 
 # Load settings
 try:
-    f = open("RS_settings.json")
-except IOError as e:
-    print(e)
+    settings_file = "RS_settings.json"
+    f = open(settings_file)
+except IOError:
+    logger.critical(f"{settings_file} does not exist!")
     exit()
 else:
-    with f:
-        data = json.load(f)
+    try:
+        with f:
+            data = json.load(f)
+    except json.JSONDecodeError as e:
+        logger.critical("JSON file is empty or corrupt!")
+        logger.critical(f"Reported error: {e}")
+        exit()
 
 try:
     # general setting
     single_mode = data["general"][0]["single_mode"]
     schedule_mode = data["general"][0]["continuous_mode"]
+    root_logger = data["general"][0]["debug_logger"]
 
     # Sakugabooru information
     sb_tags = data["moebooru"][0]["tags"]
@@ -49,8 +66,18 @@ try:
     fb_access_token = data["facebook"][0]["access_token"]
     fb_page_id = data["facebook"][0]["page_id"]
 except KeyError as e:
-    print(f"Key {e} does not exist")
+    logger.critical(f"Key {e} does not exist")
     exit()
+
+
+if root_logger:
+    logging.basicConfig(
+        filename="debug.log",
+        level=logging.DEBUG,
+        format="%(levelname)s<%(asctime)s>%(name)s:%(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+
 
 # Global variables
 tag_summary_dict = {"version": None, "tags": []}
@@ -75,6 +102,8 @@ def post():
     if fb_post_id:
         if mal_info:
             funcs.fb_MAL_comment(fb_access_token, fb_post_id, mal_info["mal_id"])
+
+        logger.info(f"Facebook post ID: {fb_post_id}")
         post_feedback = (
             f"post({fb_post_id}) on {strftime('%d/%m/%Y, %H:%M:%S', localtime())}"
         )
@@ -85,7 +114,6 @@ def post():
 try:
     # One post when the script starts if set to True
     if single_mode:
-        post()
         post()
 
     # Scheduler setup
@@ -103,6 +131,3 @@ try:
             sleep(60)  # wait one minute
 except KeyboardInterrupt:  # ! PyInstaller doesn't handle this well (PyInstaller #3646)
     print("\nInterrupt signal received!")
-
-# TODO: Logging
-# TODO: Maybe post a comment with child sakugabooru posts links.

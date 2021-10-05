@@ -16,6 +16,10 @@
 # along with Random Sakuga.  If not, see <http://www.gnu.org/licenses/>.
 
 import requests
+import logging
+
+
+logger = logging.getLogger("__main__")
 
 
 def get_sb_post(limit: int, tags: str):
@@ -30,6 +34,7 @@ def get_sb_post(limit: int, tags: str):
     for post in posts_response.json():
         if post["score"] >= high_score:
             high_post, high_score = post, int(post["score"])
+    logger.info(f"Sakuga Booru post ID: {high_post['id']}")
     return high_post
 
 
@@ -85,7 +90,7 @@ def jikan_mal_search(media: str, tags: dict):
             mal_result = jikan_response.json()["results"][0]
             return mal_result
         except requests.HTTPError as e:
-            print(e)
+            logger.error(e)
             return None
     return None
 
@@ -124,7 +129,7 @@ def fb_video_post(page_id: str, file: bytes, payload: str):
             )
         return int(fb_post_response.json()["id"])
     except requests.HTTPError as e:
-        print(e)
+        logger.error(e)
         return None
 
 
