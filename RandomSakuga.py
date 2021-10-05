@@ -23,7 +23,7 @@ import logging
 import json
 import funcs
 
-version = "V1.15-dev"
+version = "V1.15"
 print(f"RandomSakuga {version}", end="\n\n")
 
 
