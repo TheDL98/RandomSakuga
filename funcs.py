@@ -16,10 +16,10 @@
 # along with Random Sakuga.  If not, see <http://www.gnu.org/licenses/>.
 
 import requests
+import logging
 
-# Global variables
-tag_summary_version: int = None
-tag_summary_list: list = None
+
+logger = logging.getLogger("__main__")
 
 
 def get_sb_post(limit: int, tags: str):
@@ -34,26 +34,25 @@ def get_sb_post(limit: int, tags: str):
     for post in posts_response.json():
         if post["score"] >= high_score:
             high_post, high_score = post, int(post["score"])
+    logger.info(f"Sakuga Booru post ID: {high_post['id']}")
     return high_post
 
 
-def tag_summary():
-    global tag_summary_version
-    global tag_summary_list
+def tag_summary(tag_summary_dict):
     # Request a summary json of all the tags on the site and convert it to a list
     url = "https://www.sakugabooru.com/tag/summary.json"
     tag_summary: dict = requests.get(url)
-    if tag_summary_version != tag_summary.json()["version"]:
-        tag_summary_version = tag_summary.json()["version"]
-        tag_summary_list = tag_summary.json()["data"].split(" ")
-        for i in range(len(tag_summary_list)):
-            tag_summary_list[i] = tag_summary_list[i].split("`")
-            tag_summary_list[i].remove("")
-    return tag_summary_list
+    if tag_summary_dict["version"] != tag_summary.json()["version"]:
+        tag_summary_dict["version"] = tag_summary.json()["version"]
+        tag_summary_dict["tags"] = tag_summary.json()["data"].split(" ")
+        for i in range(len(tag_summary_dict["tags"])):
+            tag_summary_dict["tags"][i] = tag_summary_dict["tags"][i].split("`")
+            tag_summary_dict["tags"][i].remove("")
+    return tag_summary_dict
 
 
 # Return the artist and the media names
-def get_sb_artist_and_media(tags: str, tag_summary_list: list):
+def artist_and_media(tags: str, tag_summary_list: list):
     tags = tags.split(" ")
     artist = []
     media: str = None
@@ -68,31 +67,31 @@ def get_sb_artist_and_media(tags: str, tag_summary_list: list):
                         artist.append("Unknown Animator/s")
                 elif summary_tag[0] == "3":
                     # Try to favor media tags without "series" in them
-                    if not ("series" in tag):
+                    if "series" not in tag:
                         media = tag.replace("_", " ").title()
-                    elif not (media):
+                    elif not media:
                         media = tag.replace("_", " ").title()
     return artist, media
 
 
 # Use the Jikan unofficial MyAnimeList API to search for anime shows
 def jikan_mal_search(media: str, tags: dict):
-    if media and not ("western" in tags):
-        jikan_payload = {"q": media, "limit": 1}
-        jikan_url = "https://api.jikan.moe/v3/search/anime"
+    if media and "western" not in tags:
+        payload = {"q": media, "limit": 1}
+        url = "https://api.jikan.moe/v3/search/anime"
         try:
-            jikan_response = requests.get(jikan_url, jikan_payload)
+            jikan_response = requests.get(url, payload)
             if not jikan_response.ok:
                 raise requests.HTTPError(
                     "{0[type]}: {0[status]}\n\t{0[message]}".format(
                         jikan_response.json()
                     )
                 )
+            mal_result = jikan_response.json()["results"][0]
+            return mal_result
         except requests.HTTPError as e:
-            print(e)
+            logger.error(e)
             return None
-        mal_result = jikan_response.json()["results"][0]
-        return mal_result
     return None
 
 
@@ -119,16 +118,24 @@ def create_fb_post_payload(
 
 # Create a Facebook video post
 def fb_video_post(page_id: str, file: bytes, payload: str):
-    fb_post_url = f"https://graph.facebook.com/{page_id}/videos"
-    fb_post_response = requests.post(fb_post_url, payload, files={"source": file})
-    return int(fb_post_response.json()["id"])
+    url = f"https://graph.facebook.com/{page_id}/videos"
+    try:
+        fb_post_response = requests.post(url, payload, files={"source": file})
+        if not fb_post_response.ok:
+            raise requests.HTTPError(
+                "{0[type]}: {0[code]}\n\t{0[message]}".format(
+                    fb_post_response.json()["error"]
+                )
+            )
+        return int(fb_post_response.json()["id"])
+    except requests.HTTPError as e:
+        logger.error(e)
+        return None
 
 
 # Create an FB comment with all the tags
-def fb_MAL_comment(access_token: str, post_id: int, mal_info: str):
-    mal_id = mal_info["mal_id"]
+def fb_MAL_comment(access_token: str, post_id: int, mal_id: str):
     mal_link = f"Possible MAL link: https://myanimelist.net/anime/{mal_id}"
-    media_type = mal_info["type"]
     fb_comment_url = f"https://graph.facebook.com/{post_id}/comments"
     fb_comment_payload = {"access_token": access_token, "message": mal_link}
     fb_comment_response = requests.post(fb_comment_url, fb_comment_payload)

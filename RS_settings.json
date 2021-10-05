@@ -2,7 +2,8 @@
     "general": [
         {
             "single_mode": false,
-            "continuous_mode": true
+            "continuous_mode": true,
+            "debug_logger": false
         }
     ],
     "moebooru": [
