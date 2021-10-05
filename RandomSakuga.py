@@ -20,10 +20,11 @@ from time import strftime, localtime, sleep
 from tempfile import NamedTemporaryFile
 import requests
 import logging
+import os
 import json
 import funcs
 
-version = "V1.15"
+version = "V1.15.1"
 print(f"RandomSakuga {version}", end="\n\n")
 
 
@@ -119,7 +120,8 @@ try:
     # Scheduler setup
     if schedule_mode:
         while True:
-            stdout.write("\033[2K\033[1G")  # Erase and go to beginning of line
+            if os.name == "posix":
+                stdout.write("\033[2K\033[1G")  # Erase and go to beginning of line
             print(strftime("%H:%M", localtime()), end="\r")
 
             # Scheduler
