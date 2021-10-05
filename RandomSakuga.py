@@ -27,21 +27,30 @@ print(f"RandomSakuga {version}", end="\n\n")
 
 
 # Load settings
-with open("RS_settings.json") as f:
-    data = json.load(f)
+try:
+    f = open("RS_settings.json")
+except IOError as e:
+    print(e)
+    exit()
+else:
+    with f:
+        data = json.load(f)
 
-# general setting
-single_mode = data["general"][0]["single_mode"]
-schedule_mode = data["general"][0]["continuous_mode"]
+try:
+    # general setting
+    single_mode = data["general"][0]["single_mode"]
+    schedule_mode = data["general"][0]["continuous_mode"]
 
-# Sakugabooru information
-sb_tags = data["moebooru"][0]["tags"]
-sb_limit = data["moebooru"][0]["limit"]
+    # Sakugabooru information
+    sb_tags = data["moebooru"][0]["tags"]
+    sb_limit = data["moebooru"][0]["limit"]
 
-# facebook information
-fb_access_token = data["facebook"][0]["access_token"]
-fb_page_id = data["facebook"][0]["page_id"]
-
+    # facebook information
+    fb_access_token = data["facebook"][0]["access_token"]
+    fb_page_id = data["facebook"][0]["page_id"]
+except KeyError as e:
+    print(f"Key {e} does not exist")
+    exit()
 
 # Global variables
 tag_summary_dict = {"version": None, "tags": []}
