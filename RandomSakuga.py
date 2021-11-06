@@ -15,15 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with Random Sakuga.  If not, see <http://www.gnu.org/licenses/>.
 
-from sys import stdout, exit
+from sys import stdout
 from time import strftime, localtime, sleep
 from tempfile import NamedTemporaryFile
 import requests
 import logging
 import os
-import json
 import funcs
-import argparser
+import options
 
 
 version = "V1.15.2-dev"
@@ -50,42 +49,7 @@ logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
 
-# Load settings
-try:
-    settings_file = argparser.args.config
-    f = open(settings_file)
-except FileNotFoundError:
-    logger.critical(f'file "{settings_file}" does not exist!')
-    exit()
-else:
-    try:
-        data = json.load(f)
-    except json.JSONDecodeError as e:
-        logger.critical("JSON file is empty or corrupt!")
-        logger.critical(f"Reported error: {e}")
-        exit()
-    finally:
-        f.close()
-
-try:
-    # general setting
-    single_mode = data["general"][0]["single_mode"]
-    schedule_mode = data["general"][0]["continuous_mode"]
-    root_logger = data["general"][0]["debug_logger"]
-
-    # Sakugabooru information
-    sb_tags = data["moebooru"][0]["tags"]
-    sb_limit = data["moebooru"][0]["limit"]
-
-    # facebook information
-    fb_access_token = data["facebook"][0]["access_token"]
-    fb_page_id = data["facebook"][0]["page_id"]
-except KeyError as e:
-    logger.critical(f"Key {e} does not exist")
-    exit()
-
-
-if root_logger:
+if options.root_logger:
     logging.basicConfig(
         filename="debug.log",
         level=logging.DEBUG,
@@ -100,12 +64,12 @@ tag_summary_dict = {"version": None, "tags": []}
 
 def post():
     global tag_summary_dict
-    sb_post = funcs.get_sb_post(sb_limit, sb_tags)
+    sb_post = funcs.get_sb_post(options.sb_limit, options.sb_tags)
     tag_summary_dict = funcs.tag_summary(tag_summary_dict)
     artist, media = funcs.artist_and_media(sb_post["tags"], tag_summary_dict["tags"])
     mal_info = funcs.jikan_mal_search(media, sb_post["tags"])
     fb_payload = funcs.create_fb_post_payload(
-        sb_post["id"], artist, media, fb_access_token
+        sb_post["id"], artist, media, options.fb_access_token
     )
     temp_file_data = requests.get(sb_post["file_url"])
     # Create a temporary file
@@ -113,10 +77,12 @@ def post():
         tf.name = "dl_file." + sb_post["file_ext"]
         tf.write(temp_file_data.content)
         tf.seek(0)
-        fb_post_id = funcs.fb_video_post(fb_page_id, tf, fb_payload)
+        fb_post_id = funcs.fb_video_post(options.fb_page_id, tf, fb_payload)
     if fb_post_id:
         if mal_info:
-            funcs.fb_MAL_comment(fb_access_token, fb_post_id, mal_info["mal_id"])
+            funcs.fb_MAL_comment(
+                options.fb_access_token, fb_post_id, mal_info["mal_id"]
+            )
 
         logger.info(f"Facebook post ID: {fb_post_id}")
         post_feedback = (
@@ -128,11 +94,11 @@ def post():
 
 try:
     # One post when the script starts if set to True
-    if single_mode:
+    if options.single_mode:
         post()
 
     # Scheduler setup
-    if schedule_mode:
+    if options.schedule_mode:
         while True:
             if os.name == "posix":
                 stdout.write("\033[2K\033[1G")  # Erase and go to beginning of line
