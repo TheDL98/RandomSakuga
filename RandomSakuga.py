@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Random Sakuga.  If not, see <http://www.gnu.org/licenses/>.
 
-from sys import stdout
+from sys import stdout, exit
 from time import strftime, localtime, sleep
 from tempfile import NamedTemporaryFile
 import requests
@@ -59,12 +59,13 @@ except FileNotFoundError:
     exit()
 else:
     try:
-        with f:
-            data = json.load(f)
+        data = json.load(f)
     except json.JSONDecodeError as e:
         logger.critical("JSON file is empty or corrupt!")
         logger.critical(f"Reported error: {e}")
         exit()
+finally:
+    f.close()
 
 try:
     # general setting
