@@ -25,7 +25,7 @@ import funcs
 import options
 
 
-version = "V1.15.2-dev"
+version = "V1.16"
 print(f"RandomSakuga {version}", end="\n\n")
 
 
