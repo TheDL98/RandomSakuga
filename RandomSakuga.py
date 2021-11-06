@@ -23,6 +23,8 @@ import logging
 import os
 import json
 import funcs
+import argparser
+
 
 version = "V1.15.2-dev"
 print(f"RandomSakuga {version}", end="\n\n")
@@ -50,10 +52,10 @@ logger.addHandler(stream_handler)
 
 # Load settings
 try:
-    settings_file = "RS_settings.json"
+    settings_file = argparser.args.config
     f = open(settings_file)
-except IOError:
-    logger.critical(f"{settings_file} does not exist!")
+except FileNotFoundError:
+    logger.critical(f'file "{settings_file}" does not exist!')
     exit()
 else:
     try:

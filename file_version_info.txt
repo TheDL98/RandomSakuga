@@ -29,7 +29,7 @@ VSVersionInfo(
       [
       StringTable(
         u'000004b0',
-        [StringStruct(u'Comments', u'Python script that post random sakuga to Facebook'),
+        [StringStruct(u'Comments', u'Python script that posts random sakuga to Facebook'),
         StringStruct(u'FileDescription', u'Random Sakuga Bot'),
         StringStruct(u'FileVersion', u'1.15.1'),
         StringStruct(u'LegalCopyright', u'Copyright (C) 2020-2021 TheDL98'),
