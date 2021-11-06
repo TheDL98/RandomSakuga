@@ -64,8 +64,8 @@ else:
         logger.critical("JSON file is empty or corrupt!")
         logger.critical(f"Reported error: {e}")
         exit()
-finally:
-    f.close()
+    finally:
+        f.close()
 
 try:
     # general setting
