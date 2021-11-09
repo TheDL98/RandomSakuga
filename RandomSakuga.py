@@ -25,7 +25,7 @@ import funcs
 import options
 
 
-version = "V1.16"
+version = "V1.16.1"
 print(f"RandomSakuga {version}", end="\n\n")
 
 
@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 file_handler_format = logging.Formatter(
-    "%(levelname)s<%(asctime)s>%(module)s:%(message)s", "%Y-%m-%d %H:%M:%S"
+    "%(levelname)s<%(asctime)s>%(module)s:%(funcName)s:%(lineno)d:%(message)s", "%Y-%m-%d %H:%M:%S"
 )
 strream_handler_format = logging.Formatter("%(levelname)s:%(module)s:%(message)s")
 
