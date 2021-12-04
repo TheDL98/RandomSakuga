@@ -21,11 +21,12 @@ from tempfile import NamedTemporaryFile
 import requests
 import logging
 import os
-import funcs
+import apis
+import process
 import options
 
 
-version = "V1.16.1"
+version = "V1.17-dev"
 print(f"RandomSakuga {version}", end="\n\n")
 
 
@@ -33,7 +34,8 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 file_handler_format = logging.Formatter(
-    "%(levelname)s<%(asctime)s>%(module)s:%(funcName)s:%(lineno)d:%(message)s", "%Y-%m-%d %H:%M:%S"
+    "%(levelname)s<%(asctime)s>%(module)s:%(funcName)s:%(lineno)d:%(message)s",
+    "%Y-%m-%d %H:%M:%S",
 )
 strream_handler_format = logging.Formatter("%(levelname)s:%(module)s:%(message)s")
 
@@ -64,11 +66,11 @@ tag_summary_dict = {"version": None, "tags": []}
 
 def post():
     global tag_summary_dict
-    sb_post = funcs.get_sb_post(options.sb_limit, options.sb_tags)
-    tag_summary_dict = funcs.tag_summary(tag_summary_dict)
-    artist, media = funcs.artist_and_media(sb_post["tags"], tag_summary_dict["tags"])
-    mal_info = funcs.jikan_mal_search(media, sb_post["tags"])
-    fb_payload = funcs.create_fb_post_payload(
+    sb_post = apis.get_sb_post(options.sb_limit, options.sb_tags)
+    tag_summary_dict = apis.tag_summary(tag_summary_dict)
+    artist, media = process.artist_and_media(sb_post["tags"], tag_summary_dict["tags"])
+    mal_info = apis.jikan_mal_search(media, sb_post["tags"])
+    fb_payload = process.create_fb_post_payload(
         sb_post["id"], artist, media, options.fb_access_token
     )
     temp_file_data = requests.get(sb_post["file_url"])
@@ -77,12 +79,10 @@ def post():
         tf.name = "dl_file." + sb_post["file_ext"]
         tf.write(temp_file_data.content)
         tf.seek(0)
-        fb_post_id = funcs.fb_video_post(options.fb_page_id, tf, fb_payload)
+        fb_post_id = apis.fb_video_post(options.fb_page_id, tf, fb_payload)
     if fb_post_id:
         if mal_info:
-            funcs.fb_MAL_comment(
-                options.fb_access_token, fb_post_id, mal_info["mal_id"]
-            )
+            apis.fb_MAL_comment(options.fb_access_token, fb_post_id, mal_info["mal_id"])
 
         logger.info(f"Facebook post ID: {fb_post_id}")
         post_feedback = (

@@ -51,29 +51,6 @@ def tag_summary(tag_summary_dict):
     return tag_summary_dict
 
 
-# Return the artist and the media names
-def artist_and_media(tags: str, tag_summary_list: list):
-    tags = tags.split(" ")
-    artist = []
-    media: str = None
-    # Search through summary_list to find artist and media
-    for tag in tags:
-        for summary_tag in tag_summary_list:
-            if tag in summary_tag[1:]:
-                if summary_tag[0] == "1":
-                    if tag != "artist_unknown":
-                        artist.append(tag.replace("_", " ").title())
-                    else:
-                        artist.append("Unknown Animator/s")
-                elif summary_tag[0] == "3":
-                    # Try to favor media tags without "series" in them
-                    if "series" not in tag:
-                        media = tag.replace("_", " ").title()
-                    elif not media:
-                        media = tag.replace("_", " ").title()
-    return artist, media
-
-
 # Use the Jikan unofficial MyAnimeList API to search for anime shows
 def jikan_mal_search(media: str, tags: dict):
     if media and "western" not in tags:
@@ -93,27 +70,6 @@ def jikan_mal_search(media: str, tags: dict):
             logger.error(e)
             return None
     return None
-
-
-# Create the message to be posted on FB
-def create_fb_post_payload(
-    sb_post_id: str, sb_artists: list, sb_media: str, access_token: str
-):
-    # Message
-    sb_artists = ", ".join(sb_artists)
-    message = f"Key animation: {sb_artists}"
-    if sb_media is not None:
-        message += f"\nTV/Movie/Other: {sb_media}"
-    message += f"\nhttps://www.sakugabooru.com/post/show/{sb_post_id}"
-    # Title of the video
-    title = f"Sakugabooru post #{sb_post_id}"
-    payload = {
-        "access_token": access_token,
-        "description": message.encode("UTF-8", "strict"),
-        "content_category": "ENTERTAINMENT",
-        "title": title,
-    }
-    return payload
 
 
 # Create a Facebook video post
