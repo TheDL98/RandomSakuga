@@ -19,62 +19,63 @@ from pathlib import Path
 from sys import exit
 import argparse
 import logging
-import json
+import configparser
 
 
-default_json_file = "RS_settings.json"
+class ConfigFileError(Exception):
+    """File not found, Empty or corrupt"""
+
+
 logger = logging.getLogger("__main__")
-
 
 description = "Python script that posts random sakuga to Facebook"
 parser = argparse.ArgumentParser(prog="RandomSakuga", description=description)
 
+default_config_file = "RS_config.ini"
 parser.add_argument(
     "-c",
     "--config",
     type=Path,
     help="path to configuration file",
-    default=default_json_file,
+    default=default_config_file,
 )
 args = parser.parse_args()
 
-
 # Load settings
 try:
-    json_file = args.config
-    f = open(json_file)
-except FileNotFoundError:
-    logger.critical(f'file "{json_file}" does not exist!')
+    config_file = args.config
+    config = configparser.ConfigParser()
+    config.read(config_file)
+    if config.sections() == []:
+        raise ConfigFileError
+except ConfigFileError:
+    logger.critical("File not found, Empty or corrupt")
     exit()
-else:
-    try:
-        data = json.load(f)
-    except json.JSONDecodeError as e:
-        logger.critical("JSON file is empty or corrupt!")
-        logger.critical(f"Reported error: {e}")
-        exit()
-    finally:
-        f.close()
+
 
 try:
     # general setting
-    single_mode = data["general"][0]["single_mode"]
-    schedule_mode = data["general"][0]["continuous_mode"]
-    root_logger = data["general"][0]["debug_logger"]
+    general = config["general"]
+    single_mode = general.getboolean("single_mode")
+    schedule_mode = general.getboolean("continuous_mode")
+    root_logger = general.getboolean("debug_logger")
 
     # Sakugabooru information
-    sb_tags = data["moebooru"][0]["tags"]
-    sb_limit = data["moebooru"][0]["limit"]
-    
+    moebooru = config["moebooru"]
+    sb_tags = moebooru["tags"]
+    sb_limit = moebooru["limit"]
+
     # Jikan options
-    if data["jikan"][0]["enable_jikan_local_address"]:
-        jk_local_addr = data["jikan"][0]["local_address"]
+    jikan = config["jikan"]
+    if jikan.getboolean("enable_local_address"):
+        jk_local_addr = jikan["local_address"]
     else:
         jk_local_addr = False
 
     # facebook information
-    fb_access_token = data["facebook"][0]["access_token"]
-    fb_page_id = data["facebook"][0]["page_id"]
+    facebook = config["facebook"]
+    fb_access_token = facebook["access_token"]
+    fb_page_id = facebook["page_id"]
 except KeyError as e:
     logger.critical(f"Key {e} does not exist")
     exit()
