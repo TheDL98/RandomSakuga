@@ -69,7 +69,7 @@ def post():
     sb_post = apis.get_sb_post(options.sb_limit, options.sb_tags)
     tag_summary_dict = apis.tag_summary(tag_summary_dict)
     artist, media = process.artist_and_media(sb_post["tags"], tag_summary_dict["tags"])
-    mal_info = apis.jikan_mal_search(media, sb_post["tags"])
+    mal_info = apis.jikan_mal_search(media, sb_post["tags"], options.jk_local_addr)
     fb_payload = process.create_fb_post_payload(
         sb_post["id"], artist, media, options.fb_access_token
     )

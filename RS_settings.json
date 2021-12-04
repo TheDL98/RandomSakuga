@@ -12,6 +12,12 @@
             "limit": "2"
         }
     ],
+    "jikan": [
+        {
+            "enable_jikan_local_address": false,
+            "local_address": "http://localhost:8000"
+        }
+    ],
     "facebook": [
         {
             "access_token": "facebook access token",

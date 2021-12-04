@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Random Sakuga.  If not, see <http://www.gnu.org/licenses/>.
 
+from urllib.parse import urljoin
 import requests
 import logging
 
@@ -52,10 +53,23 @@ def tag_summary(tag_summary_dict):
 
 
 # Use the Jikan unofficial MyAnimeList API to search for anime shows
-def jikan_mal_search(media: str, tags: dict):
+def jikan_mal_search(media: str, tags: dict, jikan_local_address):
     if media and "western" not in tags:
+        default_url = "https://api.jikan.moe/v3/search/anime"
+        try:
+            if jikan_local_address:
+                requests.get(jikan_local_address)
+                url = urljoin(jikan_local_address, "v3/search/anime")
+            else:
+                url = default_url
+        except requests.exceptions.ConnectionError:
+            logger.error(
+                "No connection to your local Jikan API. "
+                "Make sure your server is up and the address is correct."
+            )
+            url = default_url
+
         payload = {"q": media, "limit": 1}
-        url = "https://api.jikan.moe/v3/search/anime"
         try:
             jikan_response = requests.get(url, payload)
             if not jikan_response.ok:

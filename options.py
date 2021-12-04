@@ -65,6 +65,12 @@ try:
     # Sakugabooru information
     sb_tags = data["moebooru"][0]["tags"]
     sb_limit = data["moebooru"][0]["limit"]
+    
+    # Jikan options
+    if data["jikan"][0]["enable_jikan_local_address"]:
+        jk_local_addr = data["jikan"][0]["local_address"]
+    else:
+        jk_local_addr = False
 
     # facebook information
     fb_access_token = data["facebook"][0]["access_token"]
