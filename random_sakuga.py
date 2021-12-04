@@ -21,9 +21,6 @@ from tempfile import NamedTemporaryFile
 import requests
 import logging
 import os
-import apis
-import process
-import options
 
 
 version = "V1.17-dev"
@@ -50,15 +47,10 @@ stream_handler.setFormatter(strream_handler_format)
 logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
-
-if options.root_logger:
-    logging.basicConfig(
-        filename="debug.log",
-        level=logging.DEBUG,
-        format="%(levelname)s<%(asctime)s>%(name)s:%(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
-
+# import project modules after logger definition
+import apis
+import process
+import options
 
 # Global variables
 tag_summary_dict = {"version": None, "tags": []}

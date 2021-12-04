@@ -58,7 +58,6 @@ try:
     general = config["general"]
     single_mode = general.getboolean("single_mode")
     schedule_mode = general.getboolean("continuous_mode")
-    root_logger = general.getboolean("debug_logger")
 
     # Sakugabooru information
     moebooru = config["moebooru"]
