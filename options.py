@@ -22,11 +22,12 @@ import logging
 import configparser
 
 
+logger = logging.getLogger("__main__")
+
+
 class ConfigFileError(Exception):
     """File not found, Empty or corrupt"""
 
-
-logger = logging.getLogger("__main__")
 
 description = "Python script that posts random sakuga to Facebook"
 parser = argparse.ArgumentParser(prog="RandomSakuga", description=description)
