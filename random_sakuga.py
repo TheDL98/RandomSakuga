@@ -15,93 +15,81 @@
 # You should have received a copy of the GNU General Public License
 # along with Random Sakuga.  If not, see <http://www.gnu.org/licenses/>.
 
-from sys import stdout
-from time import strftime, localtime, sleep
-from tempfile import NamedTemporaryFile
 import requests
 import logging
 import os
+from sys import stdout
+from time import strftime, localtime, sleep
+from tempfile import NamedTemporaryFile
 
-
-version = "V1.17-dev"
-print(f"RandomSakuga {version}", end="\n\n")
-
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
-file_handler_format = logging.Formatter(
-    "%(levelname)s<%(asctime)s>%(module)s:%(funcName)s:%(lineno)d:%(message)s",
-    "%Y-%m-%d %H:%M:%S",
-)
-strream_handler_format = logging.Formatter("%(levelname)s:%(module)s:%(message)s")
-
-file_handler = logging.FileHandler("RandomSakuga.log")
-file_handler.setLevel(logging.INFO)
-file_handler.setFormatter(file_handler_format)
-
-stream_handler = logging.StreamHandler()
-stream_handler.setLevel(logging.WARNING)
-stream_handler.setFormatter(strream_handler_format)
-
-logger.addHandler(file_handler)
-logger.addHandler(stream_handler)
-
-# import project modules after logger definition
+import logger_config
 import apis
 import process
 import options
 
-# Global variables
-tag_summary_dict = {"version": None, "tags": []}
 
+def main():
+    logger = logging.getLogger("logger_config")
 
-def post():
-    global tag_summary_dict
-    sb_post = apis.get_sb_post(options.sb_limit, options.sb_tags)
-    tag_summary_dict = apis.tag_summary(tag_summary_dict)
-    artist, media = process.artist_and_media(sb_post["tags"], tag_summary_dict["tags"])
-    mal_info = apis.jikan_mal_search(media, sb_post["tags"], options.jk_local_addr)
-    fb_payload = process.create_fb_post_payload(
-        sb_post["id"], artist, media, options.fb_access_token
-    )
-    temp_file_data = requests.get(sb_post["file_url"])
-    # Create a temporary file
-    with NamedTemporaryFile() as tf:
-        tf.name = "dl_file." + sb_post["file_ext"]
-        tf.write(temp_file_data.content)
-        tf.seek(0)
-        fb_post_id = apis.fb_video_post(options.fb_page_id, tf, fb_payload)
-    if fb_post_id:
-        if mal_info:
-            apis.fb_MAL_comment(options.fb_access_token, fb_post_id, mal_info["mal_id"])
+    version = "V1.17-dev"
+    print(f"RandomSakuga {version}", end="\n\n")
 
-        logger.info(f"Facebook post ID: {fb_post_id}")
-        post_feedback = (
-            f"post({fb_post_id}) on {strftime('%d/%m/%Y, %H:%M:%S', localtime())}"
+    # Global variables
+    tag_summary_dict = {"version": None, "tags": []}
+
+    def post():
+        global tag_summary_dict
+        sb_post = apis.get_sb_post(options.sb_limit, options.sb_tags)
+        tag_summary_dict = apis.tag_summary(tag_summary_dict)
+        artist, media = process.artist_and_media(
+            sb_post["tags"], tag_summary_dict["tags"]
         )
-        print(post_feedback)
-        print(len(post_feedback) * "-", end="\n\n")
+        mal_info = apis.jikan_mal_search(media, sb_post["tags"], options.jk_local_addr)
+        fb_payload = process.create_fb_post_payload(
+            sb_post["id"], artist, media, options.fb_access_token
+        )
+        temp_file_data = requests.get(sb_post["file_url"])
+        # Create a temporary file
+        with NamedTemporaryFile() as tf:
+            tf.name = "dl_file." + sb_post["file_ext"]
+            tf.write(temp_file_data.content)
+            tf.seek(0)
+            fb_post_id = apis.fb_video_post(options.fb_page_id, tf, fb_payload)
+        if fb_post_id:
+            if mal_info:
+                apis.fb_MAL_comment(
+                    options.fb_access_token, fb_post_id, mal_info["mal_id"]
+                )
+
+            logger.info(f"Facebook post ID: {fb_post_id}")
+            post_feedback = (
+                f"post({fb_post_id}) on {strftime('%d/%m/%Y, %H:%M:%S', localtime())}"
+            )
+            print(post_feedback)
+            print(len(post_feedback) * "-", end="\n\n")
+
+    try:
+        # One post when the script starts if set to True
+        if options.single_mode:
+            post()
+
+        # Scheduler setup
+        if options.schedule_mode:
+            while True:
+                if os.name == "posix":
+                    stdout.write("\033[2K\033[1G")  # Erase and go to beginning of line
+                print(strftime("%H:%M", localtime()), end="\r")
+
+                # Scheduler
+                # Post every six hours at (00:00, 06:00, ...)
+                hour_ = localtime().tm_hour % 6
+                minute = localtime().tm_min
+                if hour_ == 0 and minute == 0:
+                    post()
+                sleep(60)  # wait one minute
+    except KeyboardInterrupt:  # ! PyInstaller doesn't handle this well (PyInstaller #3646)
+        print("\nInterrupt signal received!")
 
 
-try:
-    # One post when the script starts if set to True
-    if options.single_mode:
-        post()
-
-    # Scheduler setup
-    if options.schedule_mode:
-        while True:
-            if os.name == "posix":
-                stdout.write("\033[2K\033[1G")  # Erase and go to beginning of line
-            print(strftime("%H:%M", localtime()), end="\r")
-
-            # Scheduler
-            # Post every six hours at (00:00, 06:00, ...)
-            hour_ = localtime().tm_hour % 6
-            minute = localtime().tm_min
-            if hour_ == 0 and minute == 0:
-                post()
-            sleep(60)  # wait one minute
-except KeyboardInterrupt:  # ! PyInstaller doesn't handle this well (PyInstaller #3646)
-    print("\nInterrupt signal received!")
+if __name__ == "__main__":
+    main()

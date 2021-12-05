@@ -17,9 +17,10 @@
 
 import logging
 
+import logger_config
 
-logger = logging.getLogger("__main__")
 
+logger = logging.getLogger("logger_config")
 
 # Return the artist and the media names
 def artist_and_media(tags: str, tag_summary_list: list):

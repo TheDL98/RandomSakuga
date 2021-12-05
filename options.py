@@ -15,14 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with Random Sakuga.  If not, see <http://www.gnu.org/licenses/>.
 
-from pathlib import Path
-from sys import exit
 import argparse
 import logging
 import configparser
+from pathlib import Path
+from sys import exit
+
+import logger_config
 
 
-logger = logging.getLogger("__main__")
+logger = logging.getLogger("logger_config")
 
 
 class ConfigFileError(Exception):

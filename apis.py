@@ -15,13 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with Random Sakuga.  If not, see <http://www.gnu.org/licenses/>.
 
-from urllib.parse import urljoin
 import requests
 import logging
+from urllib.parse import urljoin
+
+import logger_config
 
 
-logger = logging.getLogger("__main__")
-
+logger = logging.getLogger("logger_config")
 
 def get_sb_post(limit: int, tags: str):
     # Get random posts from Sakugabooru
