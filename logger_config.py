@@ -16,6 +16,7 @@
 # along with Random Sakuga.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import logging.handlers
 
 
 logger = logging.getLogger()
@@ -27,7 +28,9 @@ file_handler_format = logging.Formatter(
 )
 strream_handler_format = logging.Formatter("%(levelname)s - %(module)s - %(message)s")
 
-file_handler = logging.FileHandler("RandomSakuga.log")
+file_handler = logging.handlers.RotatingFileHandler(
+    "RandomSakuga.log", maxBytes=51200, backupCount=2
+)
 file_handler.setLevel(logging.INFO)
 file_handler.setFormatter(file_handler_format)
 
