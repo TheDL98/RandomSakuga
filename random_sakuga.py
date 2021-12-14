@@ -34,7 +34,7 @@ tag_summary_dict = {"version": None, "tags": []}
 def main():
     logger = logging.getLogger("logger_config")
 
-    version = "V1.17-dev"
+    version = "V1.17"
     print(f"RandomSakuga {version}", end="\n\n")
 
     def post():
