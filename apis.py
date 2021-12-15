@@ -24,7 +24,8 @@ import logger_config
 
 logger = logging.getLogger("logger_config")
 
-def get_sb_post(limit: int, tags: str):
+
+def get_sb_post(limit: int, tags: str) -> dict:
     # Get random posts from Sakugabooru
     payload = {"limit": limit, "tags": tags}
     url = "https://www.sakugabooru.com/post.json"
@@ -40,21 +41,23 @@ def get_sb_post(limit: int, tags: str):
     return high_post
 
 
-def tag_summary(tag_summary_dict):
+def tag_summary(prev_tag_summary: dict) -> dict:
     # Request a summary json of all the tags on the site and convert it to a list
     url = "https://www.sakugabooru.com/tag/summary.json"
     tag_summary: dict = requests.get(url)
-    if tag_summary_dict["version"] != tag_summary.json()["version"]:
-        tag_summary_dict["version"] = tag_summary.json()["version"]
-        tag_summary_dict["tags"] = tag_summary.json()["data"].split(" ")
-        for i in range(len(tag_summary_dict["tags"])):
-            tag_summary_dict["tags"][i] = tag_summary_dict["tags"][i].split("`")
-            tag_summary_dict["tags"][i].remove("")
-    return tag_summary_dict
+    if prev_tag_summary["version"] != tag_summary.json()["version"]:
+        prev_tag_summary["version"] = tag_summary.json()["version"]
+        prev_tag_summary["tags"] = tag_summary.json()["data"].split(" ")
+        for i in range(len(prev_tag_summary["tags"])):
+            prev_tag_summary["tags"][i] = prev_tag_summary["tags"][i].split("`")
+            prev_tag_summary["tags"][i].remove("")
+    return prev_tag_summary
 
 
 # Use the Jikan unofficial MyAnimeList API to search for anime shows
-def jikan_mal_search(media: str, tags: dict, jikan_local_address):
+def jikan_mal_search(
+    media: str, tags: dict, jikan_local_address: str | bool
+) -> dict | None:
     if media and "western" not in tags:
         default_url = "https://api.jikan.moe/v3/search/anime"
         try:
@@ -88,7 +91,7 @@ def jikan_mal_search(media: str, tags: dict, jikan_local_address):
 
 
 # Create a Facebook video post
-def fb_video_post(page_id: str, file: bytes, payload: str):
+def fb_video_post(page_id: str, file: bytes, payload: str) -> int | None:
     url = f"https://graph.facebook.com/{page_id}/videos"
     try:
         fb_post_response = requests.post(url, payload, files={"source": file})
@@ -105,7 +108,7 @@ def fb_video_post(page_id: str, file: bytes, payload: str):
 
 
 # Create an FB comment with all the tags
-def fb_MAL_comment(access_token: str, post_id: int, mal_id: str):
+def fb_MAL_comment(access_token: str, post_id: int, mal_id: str) -> str:
     mal_link = f"Possible MAL link: https://myanimelist.net/anime/{mal_id}"
     fb_comment_url = f"https://graph.facebook.com/{post_id}/comments"
     fb_comment_payload = {"access_token": access_token, "message": mal_link}

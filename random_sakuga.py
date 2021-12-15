@@ -31,6 +31,7 @@ import options
 # Global variables
 tag_summary_dict = {"version": None, "tags": []}
 
+
 def main():
     logger = logging.getLogger("logger_config")
 

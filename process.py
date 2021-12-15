@@ -23,7 +23,7 @@ import logger_config
 logger = logging.getLogger("logger_config")
 
 # Return the artist and the media names
-def artist_and_media(tags: str, tag_summary_list: list):
+def artist_and_media(tags: str, tag_summary_list: list) -> tuple[list, str]:
     tags = tags.split(" ")
     artist = []
     media: str = None
@@ -48,7 +48,7 @@ def artist_and_media(tags: str, tag_summary_list: list):
 # Create the message to be posted on FB
 def create_fb_post_payload(
     sb_post_id: str, sb_artists: list, sb_media: str, access_token: str
-):
+) -> dict[str, any]:
     # Message
     sb_artists = ", ".join(sb_artists)
     message = f"Key animation: {sb_artists}"
