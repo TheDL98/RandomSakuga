@@ -54,40 +54,43 @@ def tag_summary(prev_tag_summary: dict) -> dict:
     return prev_tag_summary
 
 
-# Use the Jikan unofficial MyAnimeList API to search for anime shows
-def jikan_mal_search(
-    media: str, tags: dict, jikan_local_address: str | bool
-) -> dict | None:
-    if media and "western" not in tags:
-        default_url = "https://api.jikan.moe/v3/search/anime"
-        try:
-            if jikan_local_address:
-                requests.get(jikan_local_address)
-                url = urljoin(jikan_local_address, "v3/search/anime")
-            else:
-                url = default_url
-        except requests.exceptions.ConnectionError:
-            logger.error(
-                "No connection to your local Jikan API. "
-                "Make sure your server is up and the address is correct."
-            )
-            url = default_url
+# Query IMDb using imdb-api.com
+def imdb_search(api_key: str, media: str) -> dict:
+    url = f"https://imdb-api.com/en/API/AdvancedSearch/{api_key}"
+    payload = {"title": media, "genres": "animation", "count": "1"}
+    imdb_result = requests.get(url, payload)
+    # ! Need Error handling (IndexError)
+    return imdb_result.json()["results"][0]
 
-        payload = {"q": media, "limit": 1}
-        try:
-            jikan_response = requests.get(url, payload)
-            if not jikan_response.ok:
-                raise requests.HTTPError(
-                    "{0[type]}: {0[status]}\n\t{0[message]}".format(
-                        jikan_response.json()
-                    )
-                )
-            mal_result = jikan_response.json()["results"][0]
-            return mal_result
-        except requests.HTTPError as e:
-            logger.error(e)
-            return None
-    return None
+
+# Use the Jikan unofficial MyAnimeList API to search for anime shows
+def jikan_mal_search(media: str, jikan_local_address: str | bool) -> dict | None:
+    default_url = "https://api.jikan.moe/v3/search/anime"
+    try:
+        if jikan_local_address:
+            requests.get(jikan_local_address)
+            url = urljoin(jikan_local_address, "v3/search/anime")
+        else:
+            url = default_url
+    except requests.exceptions.ConnectionError:
+        logger.error(
+            "No connection to your local Jikan API. "
+            "Make sure your server is up and the address is correct."
+        )
+        url = default_url
+
+    payload = {"q": media, "limit": 1}
+    try:
+        jikan_response = requests.get(url, payload)
+        if not jikan_response.ok:
+            raise requests.HTTPError(
+                "{0[type]}: {0[status]}\n\t{0[message]}".format(jikan_response.json())
+            )
+        mal_result = jikan_response.json()["results"][0]
+        return mal_result
+    except requests.HTTPError as e:
+        logger.error(e)
+        return None
 
 
 # Create a Facebook video post
@@ -108,9 +111,8 @@ def fb_video_post(page_id: str, file: bytes, payload: str) -> int | None:
 
 
 # Create an FB comment with all the tags
-def fb_MAL_comment(access_token: str, post_id: int, mal_id: str) -> str:
-    mal_link = f"Possible MAL link: https://myanimelist.net/anime/{mal_id}"
+def fb_comment(access_token: str, post_id: int, comment: str) -> str:
     fb_comment_url = f"https://graph.facebook.com/{post_id}/comments"
-    fb_comment_payload = {"access_token": access_token, "message": mal_link}
+    fb_comment_payload = {"access_token": access_token, "message": comment}
     fb_comment_response = requests.post(fb_comment_url, fb_comment_payload)
     return fb_comment_response.json()["id"]

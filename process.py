@@ -64,3 +64,12 @@ def create_fb_post_payload(
         "title": title,
     }
     return payload
+
+
+def create_fb_comment(western_switch: bool, media_db_result: dict) -> str:
+    if western_switch:
+        imdb_id = media_db_result["id"]
+        return f"Possible IMDb link: \nhttps://www.imdb.com/title/{imdb_id}"
+    else:
+        mal_id = media_db_result["mal_id"]
+        return f"Possible MAL link: \nhttps://myanimelist.net/anime/{mal_id}"

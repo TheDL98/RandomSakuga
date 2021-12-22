@@ -57,24 +57,28 @@ except ConfigFileError:
 
 
 try:
-    # general setting
+    # general settings
     general = config["general"]
     single_mode = general.getboolean("single_mode")
     schedule_mode = general.getboolean("continuous_mode")
 
-    # Sakugabooru information
+    # Sakugabooru settings
     moebooru = config["moebooru"]
     sb_tags = moebooru["tags"]
     sb_limit = moebooru["limit"]
-
-    # Jikan options
+    
+    # IMDb settings
+    imdb_api = config["imdb-api"]
+    imdb_api_key = imdb_api["api_key"]
+    
+    # Jikan settings
     jikan = config["jikan"]
     if jikan.getboolean("enable_local_address"):
         jk_local_addr = jikan["local_address"]
     else:
         jk_local_addr = False
 
-    # facebook information
+    # facebook settings
     facebook = config["facebook"]
     fb_access_token = facebook["access_token"]
     fb_page_id = facebook["page_id"]
