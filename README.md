@@ -6,4 +6,4 @@ Since I'm using this project as a learning experience, I might add some features
 
 ## TODO
 * If config file not present at the same directory as the executable **and** not an input argument, create a formatted config file.
-* Use IMDb if media is western.
+* ~~Use IMDb if media is western.~~

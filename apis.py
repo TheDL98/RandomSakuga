@@ -55,12 +55,14 @@ def tag_summary(prev_tag_summary: dict) -> dict:
 
 
 # Query IMDb using imdb-api.com
-def imdb_search(api_key: str, media: str) -> dict:
+def imdb_search(api_key: str, media: str) -> dict | None:
     url = f"https://imdb-api.com/en/API/AdvancedSearch/{api_key}"
     payload = {"title": media, "genres": "animation", "count": "1"}
-    imdb_result = requests.get(url, payload)
-    # ! Need Error handling (IndexError)
-    return imdb_result.json()["results"][0]
+    try:
+        imdb_result = requests.get(url, payload)
+        return imdb_result.json()["results"][0]
+    except IndexError:
+        return None
 
 
 # Use the Jikan unofficial MyAnimeList API to search for anime shows
