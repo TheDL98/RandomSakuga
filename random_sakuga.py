@@ -16,10 +16,11 @@
 # along with Random Sakuga.  If not, see <http://www.gnu.org/licenses/>.
 
 import requests
+import schedule
 import logging
 import os
 from sys import stdout
-from time import strftime, localtime, sleep
+from time import strftime, gmtime, localtime, sleep
 from tempfile import NamedTemporaryFile
 
 import logger_config
@@ -74,6 +75,10 @@ def main():
                 apis.fb_comment(options.fb_access_token, fb_post_id, comment_payload)
 
             logger.info(f"Facebook post ID: {fb_post_id}")
+
+            if os.name == "posix":
+                # Erase and go to beginning of line
+                stdout.write("\033[2K\033[1G")
             post_feedback = (
                 f"post({fb_post_id}) on {strftime('%d/%m/%Y, %H:%M:%S', localtime())}"
             )
@@ -87,18 +92,20 @@ def main():
 
         # Scheduler setup
         if options.schedule_mode:
+            schedule.every().day.at("00:00").do(post)
+            schedule.every().day.at("06:00").do(post)
+            schedule.every().day.at("12:00").do(post)
+            schedule.every().day.at("18:00").do(post)
             while True:
-                if os.name == "posix":
-                    stdout.write("\033[2K\033[1G")  # Erase and go to beginning of line
-                print(strftime("%H:%M", localtime()), end="\r")
+                n = schedule.idle_seconds()
+                if n > 0:
+                    if os.name == "posix":
+                        # Erase and go to beginning of line
+                        stdout.write("\033[2K\033[1G")
+                    print(f"Next post in: {strftime('%H:%M', gmtime(n))}", end="\r")
+                sleep(60)
+                schedule.run_pending()
 
-                # Scheduler
-                # Post every six hours at (00:00, 06:00, ...)
-                hour_ = localtime().tm_hour % 6
-                minute = localtime().tm_min
-                if hour_ == 0 and minute == 0:
-                    post()
-                sleep(60)  # wait one minute
     except KeyboardInterrupt:  # ! PyInstaller doesn't handle this well (PyInstaller #3646)
         print("\nInterrupt signal received!")
 
