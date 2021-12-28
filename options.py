@@ -66,11 +66,11 @@ try:
     moebooru = config["moebooru"]
     sb_tags = moebooru["tags"]
     sb_limit = moebooru["limit"]
-    
+
     # IMDb settings
     imdb_api = config["imdb-api"]
     imdb_api_key = imdb_api["api_key"]
-    
+
     # Jikan settings
     jikan = config["jikan"]
     if jikan.getboolean("enable_local_address"):
