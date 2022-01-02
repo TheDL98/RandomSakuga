@@ -1,4 +1,4 @@
-# Copyright (C) 2021 Ahmed Alkadhim
+# Copyright (C) 2022 Ahmed Alkadhim
 #
 # This file is part of Random Sakuga.
 #
@@ -29,7 +29,7 @@ import process
 import options
 
 
-version = "V1.18-dev"
+version = "V1.18"
 
 # Global variables
 tag_summary_dict = {"version": None, "tags": []}
