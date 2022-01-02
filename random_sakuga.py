@@ -16,10 +16,11 @@
 # along with Random Sakuga.  If not, see <http://www.gnu.org/licenses/>.
 
 import requests
+import schedule
 import logging
 import os
 from sys import stdout
-from time import strftime, localtime, sleep
+from time import strftime, gmtime, localtime, sleep
 from tempfile import NamedTemporaryFile
 
 import logger_config
@@ -28,46 +29,57 @@ import process
 import options
 
 
+version = "V1.18-dev"
+
 # Global variables
 tag_summary_dict = {"version": None, "tags": []}
 
-def main():
-    logger = logging.getLogger("logger_config")
+logger = logging.getLogger("logger_config")
 
-    version = "V1.17"
+
+def post():
+    global tag_summary_dict
+    sb_post = apis.get_sb_post(options.sb_limit, options.sb_tags)
+    tag_summary_dict = apis.tag_summary(tag_summary_dict)
+    artist, media = process.artist_and_media(sb_post["tags"], tag_summary_dict["tags"])
+
+    fb_payload = process.create_fb_post_payload(
+        sb_post["id"], artist, media, options.fb_access_token
+    )
+    temp_file_data = requests.get(sb_post["file_url"])
+    # Create a temporary file
+    with NamedTemporaryFile() as tf:
+        tf.name = "dl_file." + sb_post["file_ext"]
+        tf.write(temp_file_data.content)
+        tf.seek(0)
+        fb_post_id = apis.fb_video_post(options.fb_page_id, tf, fb_payload)
+    if fb_post_id:
+        # Check if media is western or not then query a database
+        western_bool = True if "western" in sb_post["tags"] else False
+        if media:
+            # Search IMDb if media is western, MAL otherwise
+            if western_bool:
+                media_db_result = apis.imdb_search(options.imdb_api_key, media)
+            else:
+                media_db_result = apis.jikan_mal_search(media, options.jk_local_addr)
+        if media_db_result:
+            comment_payload = process.create_fb_comment(western_bool, media_db_result)
+            apis.fb_comment(options.fb_access_token, fb_post_id, comment_payload)
+
+        logger.info(f"Facebook post ID: {fb_post_id}")
+
+        if os.name == "posix":
+            # Erase and go to beginning of line
+            stdout.write("\033[2K\033[1G")
+        post_feedback = (
+            f"post({fb_post_id}) on {strftime('%d/%m/%Y, %H:%M:%S', localtime())}"
+        )
+        print(post_feedback)
+        print(len(post_feedback) * "-", end="\n\n")
+
+
+if __name__ == "__main__":
     print(f"RandomSakuga {version}", end="\n\n")
-
-    def post():
-        global tag_summary_dict
-        sb_post = apis.get_sb_post(options.sb_limit, options.sb_tags)
-        tag_summary_dict = apis.tag_summary(tag_summary_dict)
-        artist, media = process.artist_and_media(
-            sb_post["tags"], tag_summary_dict["tags"]
-        )
-        mal_info = apis.jikan_mal_search(media, sb_post["tags"], options.jk_local_addr)
-        fb_payload = process.create_fb_post_payload(
-            sb_post["id"], artist, media, options.fb_access_token
-        )
-        temp_file_data = requests.get(sb_post["file_url"])
-        # Create a temporary file
-        with NamedTemporaryFile() as tf:
-            tf.name = "dl_file." + sb_post["file_ext"]
-            tf.write(temp_file_data.content)
-            tf.seek(0)
-            fb_post_id = apis.fb_video_post(options.fb_page_id, tf, fb_payload)
-        if fb_post_id:
-            if mal_info:
-                apis.fb_MAL_comment(
-                    options.fb_access_token, fb_post_id, mal_info["mal_id"]
-                )
-
-            logger.info(f"Facebook post ID: {fb_post_id}")
-            post_feedback = (
-                f"post({fb_post_id}) on {strftime('%d/%m/%Y, %H:%M:%S', localtime())}"
-            )
-            print(post_feedback)
-            print(len(post_feedback) * "-", end="\n\n")
-
     try:
         # One post when the script starts if set to True
         if options.single_mode:
@@ -75,21 +87,19 @@ def main():
 
         # Scheduler setup
         if options.schedule_mode:
+            schedule.every().day.at("00:00").do(post)
+            schedule.every().day.at("06:00").do(post)
+            schedule.every().day.at("12:00").do(post)
+            schedule.every().day.at("18:00").do(post)
             while True:
-                if os.name == "posix":
-                    stdout.write("\033[2K\033[1G")  # Erase and go to beginning of line
-                print(strftime("%H:%M", localtime()), end="\r")
+                n = schedule.idle_seconds()
+                if n > 0:
+                    if os.name == "posix":
+                        # Erase and go to beginning of line
+                        stdout.write("\033[2K\033[1G")
+                    print(f"Next post in: {strftime('%H:%M', gmtime(n))}", end="\r")
+                sleep(60)
+                schedule.run_pending()
 
-                # Scheduler
-                # Post every six hours at (00:00, 06:00, ...)
-                hour_ = localtime().tm_hour % 6
-                minute = localtime().tm_min
-                if hour_ == 0 and minute == 0:
-                    post()
-                sleep(60)  # wait one minute
     except KeyboardInterrupt:  # ! PyInstaller doesn't handle this well (PyInstaller #3646)
         print("\nInterrupt signal received!")
-
-
-if __name__ == "__main__":
-    main()

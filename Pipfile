@@ -6,8 +6,8 @@ name = "pypi"
 [packages]
 requests = "*"
 pyinstaller = "*"
-schedule = "*"
 black = "*"
+schedule = "*"
 
 [dev-packages]
 
