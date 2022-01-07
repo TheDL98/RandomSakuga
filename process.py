@@ -15,12 +15,25 @@
 # You should have received a copy of the GNU General Public License
 # along with Random Sakuga.  If not, see <http://www.gnu.org/licenses/>.
 
+import re
 import logging
 
 import logger_config
 
 
 logger = logging.getLogger("logger_config")
+
+
+def titlecase(s: str) -> str:
+    return re.sub(
+        r"[A-Za-z]+('[A-Za-z]+)?", lambda mo: mo.group()[0].upper() + mo.group()[1:], s
+    )
+
+
+def formated_title(s):
+    upper_roman_num = re.sub(r"\b(ix|iv|v?i{0,3})\b", lambda mo: mo.group().upper(), s)
+    return titlecase(upper_roman_num)
+
 
 # Return the artist and the media names
 def artist_and_media(tags: str, tag_summary_list: list) -> tuple[list, str]:
@@ -33,15 +46,15 @@ def artist_and_media(tags: str, tag_summary_list: list) -> tuple[list, str]:
             if tag in summary_tag[1:]:
                 if summary_tag[0] == "1":
                     if tag != "artist_unknown":
-                        artist.append(tag.replace("_", " ").title())
+                        artist.append(titlecase(tag.replace("_", " ")))
                     else:
                         artist.append("Unknown Animator/s")
                 elif summary_tag[0] == "3":
-                    # Try to favor media tags without "series" in them
+                    # Favor media tags without "series" in them
                     if "series" not in tag:
-                        media = tag.replace("_", " ").title()
+                        media = formated_title(tag.replace("_", " "))
                     elif not media:
-                        media = tag.replace("_", " ").title()
+                        media = formated_title(tag.replace("_", " "))
     return artist, media
 
 
