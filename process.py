@@ -1,4 +1,4 @@
-# Copyright (C) 2021 Ahmed Alkadhim
+# Copyright (C) 2022 Ahmed Alkadhim
 #
 # This file is part of Random Sakuga.
 #
