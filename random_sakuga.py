@@ -61,12 +61,15 @@ def post():
         if media:
             # Search IMDb if media is western, MAL otherwise
             if western_bool:
-                media_db_result = apis.imdb_search(options.imdb_api_key, media)
+                media_db_result = apis.imdb_search(media, options.imdb_api_key)
             else:
                 media_db_result = apis.jikan_mal_search(media, options.jk_local_addr)
-        if media_db_result:
-            comment_payload = process.create_fb_comment(western_bool, media_db_result)
-            apis.fb_comment(options.fb_access_token, fb_post_id, comment_payload)
+
+            if media_db_result:
+                comment_payload = process.create_fb_comment(
+                    western_bool, media_db_result
+                )
+                apis.fb_comment(options.fb_access_token, fb_post_id, comment_payload)
 
         logger.info(f"Facebook post ID: {fb_post_id}")
 
