@@ -1,4 +1,4 @@
-# Copyright (C) 2021 Ahmed Alkadhim
+# Copyright (C) 2022 Ahmed Alkadhim
 #
 # This file is part of Random Sakuga.
 #
@@ -55,7 +55,7 @@ def tag_summary(prev_tag_summary: dict) -> dict:
 
 
 # Query IMDb using imdb-api.com
-def imdb_search(api_key: str, media: str) -> dict | None:
+def imdb_search(media: str, api_key: str) -> dict | None:
     url = f"https://imdb-api.com/en/API/AdvancedSearch/{api_key}"
     payload = {"title": media, "genres": "animation", "count": "1"}
     try:
