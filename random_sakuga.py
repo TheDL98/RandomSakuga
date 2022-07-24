@@ -31,7 +31,7 @@ import process
 import options
 
 
-version = "V1.19"
+version = "V1.20-dev"
 
 # Global variables
 tag_summary_dict = {"version": None, "tags": []}
@@ -55,23 +55,25 @@ def post():
         tf.write(temp_file_data.content)
         tf.seek(0)
         fb_post_id = apis.fb_video_post(options.fb_page_id, tf, fb_payload)
-    if fb_post_id:
-        # Check if media is western or not then query a database
-        western_bool = True if "western" in sb_post["tags"] else False
-        if media:
-            # Search IMDb if media is western, MAL otherwise
-            if western_bool:
-                media_db_result = apis.imdb_search(media, options.imdb_api_key)
-            else:
-                media_db_result = apis.jikan_mal_search(media, options.jk_local_addr)
 
-            if media_db_result:
-                comment_payload = process.create_fb_comment(
-                    western_bool, media_db_result
-                )
-                apis.fb_comment(options.fb_access_token, fb_post_id, comment_payload)
+        if fb_post_id:
+        # ! Disable Facebook comments since they are being flagged as spam
+        #     # Check if media is western or not then query a database
+        #     western_bool = True if "western" in sb_post["tags"] else False
+        #     if media:
+        #         # Search IMDb if media is western, MAL otherwise
+        #         if western_bool:
+        #             media_db_result = apis.imdb_search(media, options.imdb_api_key)
+        #         else:
+        #             media_db_result = apis.jikan_mal_search(media, options.jk_local_addr)
 
-        logger.info(f"Facebook post ID: {fb_post_id}")
+        #         if media_db_result:
+        #             comment_payload = process.create_fb_comment(
+        #                 western_bool, media_db_result
+        #             )
+        #             apis.fb_comment(options.fb_access_token, fb_post_id, comment_payload)
+
+            logger.info(f"Facebook post ID: {fb_post_id}")
 
         if os.name == "posix":
             # Erase and go to beginning of line
