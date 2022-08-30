@@ -98,10 +98,7 @@ def main():
 
     # Scheduler setup
     if options.schedule_mode:
-        schedule.every().day.at("00:00").do(post)
         schedule.every().day.at("06:00").do(post)
-        schedule.every().day.at("12:00").do(post)
-        schedule.every().day.at("18:00").do(post)
         while True:
             n = schedule.idle_seconds()
             if n > 0:
