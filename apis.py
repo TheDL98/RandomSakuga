@@ -95,6 +95,35 @@ def jikan_mal_search(media: str, jikan_local_address: str | bool) -> dict | None
         return None
 
 
+def jikan_v4_mal_search(media: str, jikan_local_address: str | bool) -> dict | None:
+    default_url = "https://api.jikan.moe/v4/anime"
+    try:
+        if jikan_local_address:
+            requests.get(jikan_local_address)
+            url = urljoin(jikan_local_address, "v4/anime")
+        else:
+            url = default_url
+    except requests.exceptions.ConnectionError:
+        logger.error(
+            "No connection to your local Jikan API. "
+            "Make sure your server is up and the address is correct."
+        )
+        url = default_url
+
+    payload = {"q": media, "limit": 1}
+    try:
+        jikan_response = requests.get(url, payload)
+        if not jikan_response.ok:
+            raise requests.HTTPError(
+                "{0[type]}: {0[status]}\n\t{0[message]}".format(jikan_response.json())
+            )
+        mal_result = jikan_response.json()["data"][0]
+        return mal_result
+    except requests.HTTPError as e:
+        logger.error(e)
+        return None
+
+
 # Create a Facebook video post
 def fb_video_post(page_id: str, file: bytes, payload: str) -> int | None:
     url = f"https://graph.facebook.com/{page_id}/videos"
