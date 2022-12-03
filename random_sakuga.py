@@ -44,9 +44,12 @@ def post():
     sb_post = apis.get_sb_post(options.sb_limit, options.sb_tags)
     tag_summary_dict = apis.tag_summary(tag_summary_dict)
     artist, media = process.artist_and_media(sb_post["tags"], tag_summary_dict["tags"])
-
+    if media:
+        media_db_result = process.media_databases(sb_post["tags"], media)
+    else:
+        media_db_result = None
     fb_payload = process.create_fb_post_payload(
-        sb_post["id"], artist, media, options.fb_access_token
+        sb_post["id"], artist, media, media_db_result, options.fb_access_token
     )
     temp_file_data = requests.get(sb_post["file_url"])
     # Create a temporary file
@@ -57,22 +60,6 @@ def post():
         fb_post_id = apis.fb_video_post(options.fb_page_id, tf, fb_payload)
 
         if fb_post_id:
-        # ! Disable Facebook comments since they are being flagged as spam
-        #     # Check if media is western or not then query a database
-        #     western_bool = True if "western" in sb_post["tags"] else False
-        #     if media:
-        #         # Search IMDb if media is western, MAL otherwise
-        #         if western_bool:
-        #             media_db_result = apis.imdb_search(media, options.imdb_api_key)
-        #         else:
-        #             media_db_result = apis.jikan_mal_search(media, options.jk_local_addr)
-
-        #         if media_db_result:
-        #             comment_payload = process.create_fb_comment(
-        #                 western_bool, media_db_result
-        #             )
-        #             apis.fb_comment(options.fb_access_token, fb_post_id, comment_payload)
-
             logger.info(f"Facebook post ID: {fb_post_id}")
 
         if os.name == "posix":

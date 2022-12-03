@@ -141,7 +141,7 @@ def fb_video_post(page_id: str, file: bytes, payload: str) -> int | None:
         return None
 
 
-# Create an FB comment
+# Create an FB comment  # ! Disabled
 def fb_comment(access_token: str, post_id: int, comment: str) -> str:
     fb_comment_url = f"https://graph.facebook.com/{post_id}/comments"
     fb_comment_payload = {"access_token": access_token, "message": comment}

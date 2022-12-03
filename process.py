@@ -19,6 +19,8 @@ import re
 import logging
 
 import logger_config
+import apis
+import options
 
 
 logger = logging.getLogger("logger_config")
@@ -60,7 +62,11 @@ def artist_and_media(tags: str, tag_summary_list: list) -> tuple[list, str]:
 
 # Create the message to be posted on FB
 def create_fb_post_payload(
-    sb_post_id: str, sb_artists: list, sb_media: str, access_token: str
+    sb_post_id: str,
+    sb_artists: list,
+    sb_media: str,
+    media_db_result: str,
+    access_token: str,
 ) -> dict[str, any]:
     # Message
     sb_artists = ", ".join(sb_artists)
@@ -68,6 +74,8 @@ def create_fb_post_payload(
     if sb_media is not None:
         message += f"\nTV/Movie/Other: {sb_media}"
     message += f"\nhttps://www.sakugabooru.com/post/show/{sb_post_id}"
+    if media_db_result is not None:
+        message += f"\n\n{media_db_result}"
     # Title of the video
     title = f"Sakugabooru post #{sb_post_id}"
     payload = {
@@ -79,10 +87,12 @@ def create_fb_post_payload(
     return payload
 
 
-def create_fb_comment(western_switch: bool, media_db_result: dict) -> str:
-    if western_switch:
-        imdb_id = media_db_result["id"]
+def media_databases(tags: str, sb_media: str):
+    # Check if media is western or not then query a database
+    western_bool = True if "western" in tags else False
+    if western_bool:
+        imdb_id = apis.imdb_search(sb_media, options.imdb_api_key)["id"]
         return f"Possible IMDb link: \nhttps://www.imdb.com/title/{imdb_id}"
     else:
-        mal_id = media_db_result["mal_id"]
+        mal_id = apis.jikan_v4_mal_search(sb_media, options.jk_local_addr)["mal_id"]
         return f"Possible MAL link: \nhttps://myanimelist.net/anime/{mal_id}"
