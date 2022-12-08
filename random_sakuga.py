@@ -39,7 +39,7 @@ tag_summary_dict = {"version": None, "tags": []}
 logger = logging.getLogger("logger_config")
 
 
-def post():
+def post() -> None:
     global tag_summary_dict
     sb_post = apis.get_sb_post(options.sb_limit, options.sb_tags)
     tag_summary_dict = apis.tag_summary(tag_summary_dict)
@@ -78,7 +78,7 @@ def post():
     stop=tenacity.stop_after_attempt(5),
     reraise=True,
 )
-def main():
+def main() -> None:
     # One post when the script starts if set to True
     if options.single_mode:
         post()

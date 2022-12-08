@@ -32,7 +32,7 @@ def titlecase(s: str) -> str:
     )
 
 
-def formated_title(s):
+def formated_title(s) -> str:
     upper_roman_num = re.sub(r"\b(ix|iv|v?i{0,3})\b", lambda mo: mo.group().upper(), s)
     return titlecase(upper_roman_num)
 
@@ -87,7 +87,7 @@ def create_fb_post_payload(
     return payload
 
 
-def media_databases(tags: str, sb_media: str):
+def media_databases(tags: str, sb_media: str) -> str:
     # Check if media is western or not then query a database
     western_bool = True if "western" in tags else False
     if western_bool:
