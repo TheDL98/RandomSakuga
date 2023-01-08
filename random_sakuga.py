@@ -1,4 +1,4 @@
-# Copyright (C) 2022 Ahmed Alkadhim
+# Copyright (C) 2023 Ahmed Alkadhim
 #
 # This file is part of Random Sakuga.
 #
@@ -85,7 +85,7 @@ def main() -> None:
 
     # Scheduler setup
     if options.schedule_mode:
-        schedule.every().day.at("06:00").do(post)
+        schedule.every().day.at(options.post_time).do(post)
         while True:
             n = schedule.idle_seconds()
             if n > 0:

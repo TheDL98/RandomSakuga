@@ -1,4 +1,4 @@
-# Copyright (C) 2021 Ahmed Alkadhim
+# Copyright (C) 2023 Ahmed Alkadhim
 #
 # This file is part of Random Sakuga.
 #
@@ -61,6 +61,7 @@ try:
     general = config["general"]
     single_mode = general.getboolean("single_mode")
     schedule_mode = general.getboolean("continuous_mode")
+    post_time = general.get("post_time")
 
     # Sakugabooru settings
     moebooru = config["moebooru"]
