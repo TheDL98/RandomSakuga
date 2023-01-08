@@ -31,7 +31,7 @@ import process
 import options
 
 
-version = "V1.20-dev"
+version = "V1.20"
 
 # Global variables
 tag_summary_dict = {"version": None, "tags": []}
