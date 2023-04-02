@@ -1,4 +1,4 @@
-# Copyright (C) 2022 Ahmed Alkadhim
+# Copyright (C) 2023 Ahmed Alkadhim
 #
 # This file is part of Random Sakuga.
 #
@@ -67,35 +67,6 @@ def imdb_search(media: str, api_key: str) -> dict | None:
 
 # Use the Jikan unofficial MyAnimeList API to search for anime shows
 def jikan_mal_search(media: str, jikan_local_address: str | bool) -> dict | None:
-    default_url = "https://api.jikan.moe/v3/search/anime"
-    try:
-        if jikan_local_address:
-            requests.get(jikan_local_address)
-            url = urljoin(jikan_local_address, "v3/search/anime")
-        else:
-            url = default_url
-    except requests.exceptions.ConnectionError:
-        logger.error(
-            "No connection to your local Jikan API. "
-            "Make sure your server is up and the address is correct."
-        )
-        url = default_url
-
-    payload = {"q": media, "limit": 1}
-    try:
-        jikan_response = requests.get(url, payload)
-        if not jikan_response.ok:
-            raise requests.HTTPError(
-                "{0[type]}: {0[status]}\n\t{0[message]}".format(jikan_response.json())
-            )
-        mal_result = jikan_response.json()["results"][0]
-        return mal_result
-    except requests.HTTPError as e:
-        logger.error(e)
-        return None
-
-
-def jikan_v4_mal_search(media: str, jikan_local_address: str | bool) -> dict | None:
     default_url = "https://api.jikan.moe/v4/anime"
     try:
         if jikan_local_address:

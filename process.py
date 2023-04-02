@@ -94,5 +94,5 @@ def media_databases(tags: str, sb_media: str) -> str:
         imdb_id = apis.imdb_search(sb_media, options.imdb_api_key)["id"]
         return f"Possible IMDb link: \nhttps://www.imdb.com/title/{imdb_id}"
     elif options.jikan_enable and not western_bool:
-        mal_id = apis.jikan_v4_mal_search(sb_media, options.jk_local_addr)["mal_id"]
+        mal_id = apis.jikan_mal_search(sb_media, options.jk_local_addr)["mal_id"]
         return f"Possible MAL link: \nhttps://myanimelist.net/anime/{mal_id}"
