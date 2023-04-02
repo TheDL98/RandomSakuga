@@ -70,14 +70,18 @@ try:
 
     # IMDb settings
     imdb_api = config["imdb-api"]
-    imdb_api_key = imdb_api["api_key"]
+    imdb_enable = imdb_api.getboolean("imdb_enable")
+    if imdb_enable:
+        imdb_api_key = imdb_api["api_key"]
 
     # Jikan settings
     jikan = config["jikan"]
-    if jikan.getboolean("enable_local_address"):
-        jk_local_addr = jikan["local_address"]
-    else:
-        jk_local_addr = False
+    jikan_enable = jikan.getboolean("jikan_enable")
+    if jikan_enable:
+        if jikan.getboolean("enable_local_address"):
+            jk_local_addr = jikan["local_address"]
+        else:
+            jk_local_addr = False
 
     # facebook settings
     facebook = config["facebook"]

@@ -90,9 +90,9 @@ def create_fb_post_payload(
 def media_databases(tags: str, sb_media: str) -> str:
     # Check if media is western or not then query a database
     western_bool = True if "western" in tags else False
-    if western_bool:
+    if options.imdb_enable and western_bool:
         imdb_id = apis.imdb_search(sb_media, options.imdb_api_key)["id"]
         return f"Possible IMDb link: \nhttps://www.imdb.com/title/{imdb_id}"
-    else:
+    elif options.jikan_enable and not western_bool:
         mal_id = apis.jikan_v4_mal_search(sb_media, options.jk_local_addr)["mal_id"]
         return f"Possible MAL link: \nhttps://myanimelist.net/anime/{mal_id}"
