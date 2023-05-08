@@ -66,6 +66,7 @@ def imdb_search(media: str, api_key: str) -> dict | None:
 
 
 # Use the Jikan unofficial MyAnimeList API to search for anime shows
+# ! Deprecated
 def jikan_mal_search(media: str, jikan_local_address: str | bool) -> dict | None:
     default_url = "https://api.jikan.moe/v4/anime"
     try:
