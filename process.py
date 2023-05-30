@@ -103,5 +103,5 @@ def media_databases(tags: str, sb_media: str) -> str:
             jikan = Jikan(selected_base=options.jk_local_addr)
         else:
             jikan = Jikan()
-        mal_id = jikan.search("anime", sb_media, parameters={"limit":1})["data"][0]
+        mal_id = jikan.search("anime", sb_media, parameters={"limit":1})["data"][0]["mal_id"]
         return f"Possible MAL link: \nhttps://myanimelist.net/anime/{mal_id}"
