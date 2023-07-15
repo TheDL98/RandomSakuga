@@ -85,8 +85,10 @@ try:
 
     # facebook settings
     facebook = config["facebook"]
-    fb_access_token = facebook["access_token"]
-    fb_page_id = facebook["page_id"]
+    fb_enable = facebook["facebook_enable"]
+    if fb_enable:
+        fb_access_token = facebook["access_token"]
+        fb_page_id = facebook["page_id"]
 except KeyError as e:
     logger.critical(f"Key {e} does not exist")
     exit()

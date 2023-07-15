@@ -57,19 +57,20 @@ def post() -> None:
         tf.name = "dl_file." + sb_post["file_ext"]
         tf.write(temp_file_data.content)
         tf.seek(0)
-        fb_post_id = apis.fb_video_post(options.fb_page_id, tf, fb_payload)
+        if options.fb_enable:
+            fb_post_id = apis.fb_video_post(options.fb_page_id, tf, fb_payload)
 
-        if fb_post_id:
-            logger.info(f"Facebook post ID: {fb_post_id}")
+            if fb_post_id:
+                logger.info(f"Facebook post ID: {fb_post_id}")
 
-        if os.name == "posix":
-            # Erase and go to beginning of line
-            stdout.write("\033[2K\033[1G")
-        post_feedback = (
-            f"post({fb_post_id}) on {strftime('%d/%m/%Y, %H:%M:%S', localtime())}"
-        )
-        print(post_feedback)
-        print(len(post_feedback) * "-", end="\n\n")
+            if os.name == "posix":
+                # Erase and go to beginning of line
+                stdout.write("\033[2K\033[1G")
+            post_feedback = (
+                f"post({fb_post_id}) on {strftime('%d/%m/%Y, %H:%M:%S', localtime())}"
+            )
+            print(post_feedback)
+            print(len(post_feedback) * "-", end="\n\n")
 
 
 @tenacity.retry(
@@ -105,5 +106,7 @@ if __name__ == "__main__":
     except (ConnectionError, Timeout):
         logger.critical("No Internet connection!")
 
-    except KeyboardInterrupt:  # ! PyInstaller doesn't handle this well (PyInstaller #3646)
+    except (
+        KeyboardInterrupt
+    ):  # ! PyInstaller doesn't handle this well (PyInstaller #3646)
         print("\nInterrupt signal received!")
