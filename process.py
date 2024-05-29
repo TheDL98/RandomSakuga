@@ -33,7 +33,7 @@ def titlecase(s: str) -> str:
     )
 
 
-def formated_title(s) -> str:
+def formatted_title(s) -> str:
     upper_roman_num = re.sub(r"\b(ix|iv|v?i{0,3})\b", lambda mo: mo.group().upper(), s)
     return titlecase(upper_roman_num)
 
@@ -55,9 +55,9 @@ def artist_and_media(tags: str, tag_summary_list: list) -> tuple[list, str]:
                 elif summary_tag[0] == "3":
                     # Favor media tags without "series" in them
                     if "series" not in tag:
-                        media = formated_title(tag.replace("_", " "))
+                        media = formatted_title(tag.replace("_", " "))
                     elif not media:
-                        media = formated_title(tag.replace("_", " "))
+                        media = formatted_title(tag.replace("_", " "))
     return artist, media
 
 
