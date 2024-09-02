@@ -2,9 +2,9 @@ import re
 import logging
 from jikanpy import Jikan
 
-import logger_config
-import apis
-import options
+import random_sakuga.logger_config as logger_config
+import random_sakuga.apis as apis
+import random_sakuga.options as options
 
 
 logger = logging.getLogger("logger_config")

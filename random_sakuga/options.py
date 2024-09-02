@@ -6,7 +6,7 @@ import configparser
 from pathlib import Path
 from sys import exit
 
-import logger_config
+import random_sakuga.logger_config as logger_config
 
 
 logger = logging.getLogger("logger_config")

@@ -8,10 +8,10 @@ from time import strftime, gmtime, localtime, sleep
 from tempfile import NamedTemporaryFile
 from requests.exceptions import ConnectionError, Timeout
 
-import logger_config
-import apis
-import process
-import options
+import random_sakuga.logger_config as logger_config
+import random_sakuga.apis as apis
+import random_sakuga.process as process
+import random_sakuga.options as options
 
 
 version = "V1.21-beta"

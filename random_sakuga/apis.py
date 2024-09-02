@@ -2,7 +2,7 @@ import requests
 import logging
 from urllib.parse import urljoin
 
-import logger_config
+import random_sakuga.logger_config as logger_config
 
 
 logger = logging.getLogger("logger_config")
