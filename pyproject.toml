@@ -16,6 +16,7 @@ black = ">=23.3.0"
 schedule = ">=1.2.0"
 tenacity = ">=8.3.0"
 jikanpy-v4 = ">=1.0.2"
+platformdirs = "^4.2.2"
 
 
 [build-system]

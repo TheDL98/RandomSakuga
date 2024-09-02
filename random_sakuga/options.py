@@ -1,5 +1,7 @@
+import platformdirs
 import argparse
 import logging
+import os
 import configparser
 from pathlib import Path
 from sys import exit
@@ -17,7 +19,12 @@ class ConfigFileError(Exception):
 description = "Python script that posts random sakuga to Facebook"
 parser = argparse.ArgumentParser(prog="RandomSakuga", description=description)
 
-default_config_file = "RS_config.ini"
+
+# Check if the config file is in the user's config directory otherwise use current working directory
+default_config_file = os.path.join(platformdirs.user_config_dir(), "random_sakuga.ini")
+if not os.path.isfile(default_config_file):
+    default_config_file = "./random_sakuga.ini"
+
 parser.add_argument(
     "-c",
     "--config",
@@ -35,7 +42,7 @@ try:
     if config.sections() == []:
         raise ConfigFileError
 except ConfigFileError:
-    logger.critical("File not found, Empty or corrupt")
+    logger.critical("Config file not found, empty or invalid")
     exit()
 
 
