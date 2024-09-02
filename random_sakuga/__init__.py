@@ -1,20 +1,3 @@
-# Copyright (C) 2023 Ahmed Alkadhim
-#
-# This file is part of Random Sakuga.
-#
-# Random Sakuga is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Random Sakuga is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Random Sakuga.  If not, see <http://www.gnu.org/licenses/>.
-
 import requests
 import schedule
 import tenacity
@@ -25,13 +8,13 @@ from time import strftime, gmtime, localtime, sleep
 from tempfile import NamedTemporaryFile
 from requests.exceptions import ConnectionError, Timeout
 
-import logger_config
-import apis
-import process
-import options
+import random_sakuga.logger_config as logger_config
+import random_sakuga.apis as apis
+import random_sakuga.process as process
+import random_sakuga.options as options
 
 
-version = "V1.20"
+version = "V1.21-beta"
 
 # Global variables
 tag_summary_dict = {"version": None, "tags": []}
@@ -57,19 +40,20 @@ def post() -> None:
         tf.name = "dl_file." + sb_post["file_ext"]
         tf.write(temp_file_data.content)
         tf.seek(0)
-        fb_post_id = apis.fb_video_post(options.fb_page_id, tf, fb_payload)
+        if options.fb_enable:
+            fb_post_id = apis.fb_video_post(options.fb_page_id, tf, fb_payload)
 
-        if fb_post_id:
-            logger.info(f"Facebook post ID: {fb_post_id}")
+            if fb_post_id:
+                logger.info(f"Facebook post ID: {fb_post_id}")
 
-        if os.name == "posix":
-            # Erase and go to beginning of line
-            stdout.write("\033[2K\033[1G")
-        post_feedback = (
-            f"post({fb_post_id}) on {strftime('%d/%m/%Y, %H:%M:%S', localtime())}"
-        )
-        print(post_feedback)
-        print(len(post_feedback) * "-", end="\n\n")
+            if os.name == "posix":
+                # Erase and go to beginning of line
+                stdout.write("\033[2K\033[1G")
+            post_feedback = (
+                f"post({fb_post_id}) on {strftime('%d/%m/%Y, %H:%M:%S', localtime())}"
+            )
+            print(post_feedback)
+            print(len(post_feedback) * "-", end="\n\n")
 
 
 @tenacity.retry(
@@ -105,5 +89,7 @@ if __name__ == "__main__":
     except (ConnectionError, Timeout):
         logger.critical("No Internet connection!")
 
-    except KeyboardInterrupt:  # ! PyInstaller doesn't handle this well (PyInstaller #3646)
+    except (
+        KeyboardInterrupt
+    ):  # ! PyInstaller doesn't handle this well (PyInstaller #3646)
         print("\nInterrupt signal received!")

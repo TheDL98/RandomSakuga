@@ -1,25 +1,8 @@
-# Copyright (C) 2022 Ahmed Alkadhim
-#
-# This file is part of Random Sakuga.
-#
-# Random Sakuga is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Random Sakuga is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Random Sakuga.  If not, see <http://www.gnu.org/licenses/>.
-
 import requests
 import logging
 from urllib.parse import urljoin
 
-import logger_config
+import random_sakuga.logger_config as logger_config
 
 
 logger = logging.getLogger("logger_config")
@@ -66,36 +49,8 @@ def imdb_search(media: str, api_key: str) -> dict | None:
 
 
 # Use the Jikan unofficial MyAnimeList API to search for anime shows
+# ! Deprecated
 def jikan_mal_search(media: str, jikan_local_address: str | bool) -> dict | None:
-    default_url = "https://api.jikan.moe/v3/search/anime"
-    try:
-        if jikan_local_address:
-            requests.get(jikan_local_address)
-            url = urljoin(jikan_local_address, "v3/search/anime")
-        else:
-            url = default_url
-    except requests.exceptions.ConnectionError:
-        logger.error(
-            "No connection to your local Jikan API. "
-            "Make sure your server is up and the address is correct."
-        )
-        url = default_url
-
-    payload = {"q": media, "limit": 1}
-    try:
-        jikan_response = requests.get(url, payload)
-        if not jikan_response.ok:
-            raise requests.HTTPError(
-                "{0[type]}: {0[status]}\n\t{0[message]}".format(jikan_response.json())
-            )
-        mal_result = jikan_response.json()["results"][0]
-        return mal_result
-    except requests.HTTPError as e:
-        logger.error(e)
-        return None
-
-
-def jikan_v4_mal_search(media: str, jikan_local_address: str | bool) -> dict | None:
     default_url = "https://api.jikan.moe/v4/anime"
     try:
         if jikan_local_address:

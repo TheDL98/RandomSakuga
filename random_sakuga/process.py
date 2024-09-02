@@ -1,26 +1,10 @@
-# Copyright (C) 2022 Ahmed Alkadhim
-#
-# This file is part of Random Sakuga.
-#
-# Random Sakuga is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Random Sakuga is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Random Sakuga.  If not, see <http://www.gnu.org/licenses/>.
-
 import re
 import logging
+from jikanpy import Jikan
 
-import logger_config
-import apis
-import options
+import random_sakuga.logger_config as logger_config
+import random_sakuga.apis as apis
+import random_sakuga.options as options
 
 
 logger = logging.getLogger("logger_config")
@@ -32,7 +16,7 @@ def titlecase(s: str) -> str:
     )
 
 
-def formated_title(s) -> str:
+def formatted_title(s) -> str:
     upper_roman_num = re.sub(r"\b(ix|iv|v?i{0,3})\b", lambda mo: mo.group().upper(), s)
     return titlecase(upper_roman_num)
 
@@ -54,9 +38,9 @@ def artist_and_media(tags: str, tag_summary_list: list) -> tuple[list, str]:
                 elif summary_tag[0] == "3":
                     # Favor media tags without "series" in them
                     if "series" not in tag:
-                        media = formated_title(tag.replace("_", " "))
+                        media = formatted_title(tag.replace("_", " "))
                     elif not media:
-                        media = formated_title(tag.replace("_", " "))
+                        media = formatted_title(tag.replace("_", " "))
     return artist, media
 
 
@@ -90,9 +74,17 @@ def create_fb_post_payload(
 def media_databases(tags: str, sb_media: str) -> str:
     # Check if media is western or not then query a database
     western_bool = True if "western" in tags else False
-    if western_bool:
+    if options.imdb_enable and western_bool:
         imdb_id = apis.imdb_search(sb_media, options.imdb_api_key)["id"]
         return f"Possible IMDb link: \nhttps://www.imdb.com/title/{imdb_id}"
-    else:
-        mal_id = apis.jikan_v4_mal_search(sb_media, options.jk_local_addr)["mal_id"]
+    elif options.jikan_enable and not western_bool:
+        #! Deprecated
+        # mal_id = apis.jikan_mal_search(sb_media, options.jk_local_addr)["mal_id"]
+        #
+        
+        if options.jk_local_addr:
+            jikan = Jikan(selected_base=options.jk_local_addr)
+        else:
+            jikan = Jikan()
+        mal_id = jikan.search("anime", sb_media, parameters={"limit":1})["data"][0]["mal_id"]
         return f"Possible MAL link: \nhttps://myanimelist.net/anime/{mal_id}"

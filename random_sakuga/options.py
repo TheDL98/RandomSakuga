@@ -1,27 +1,12 @@
-# Copyright (C) 2023 Ahmed Alkadhim
-#
-# This file is part of Random Sakuga.
-#
-# Random Sakuga is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Random Sakuga is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Random Sakuga.  If not, see <http://www.gnu.org/licenses/>.
-
+import platformdirs
 import argparse
 import logging
+import os
 import configparser
 from pathlib import Path
 from sys import exit
 
-import logger_config
+import random_sakuga.logger_config as logger_config
 
 
 logger = logging.getLogger("logger_config")
@@ -34,7 +19,12 @@ class ConfigFileError(Exception):
 description = "Python script that posts random sakuga to Facebook"
 parser = argparse.ArgumentParser(prog="RandomSakuga", description=description)
 
-default_config_file = "RS_config.ini"
+
+# Check if the config file is in the user's config directory otherwise use current working directory
+default_config_file = os.path.join(platformdirs.user_config_dir(), "random_sakuga.ini")
+if not os.path.isfile(default_config_file):
+    default_config_file = "./random_sakuga.ini"
+
 parser.add_argument(
     "-c",
     "--config",
@@ -52,7 +42,7 @@ try:
     if config.sections() == []:
         raise ConfigFileError
 except ConfigFileError:
-    logger.critical("File not found, Empty or corrupt")
+    logger.critical("Config file not found, empty or invalid")
     exit()
 
 
@@ -70,17 +60,22 @@ try:
 
     # IMDb settings
     imdb_api = config["imdb-api"]
-    imdb_api_key = imdb_api["api_key"]
+    imdb_enable = imdb_api.getboolean("imdb_enable")
+    if imdb_enable:
+        imdb_api_key = imdb_api["api_key"]
 
     # Jikan settings
     jikan = config["jikan"]
-    if jikan.getboolean("enable_local_address"):
-        jk_local_addr = jikan["local_address"]
-    else:
-        jk_local_addr = False
+    jikan_enable = jikan.getboolean("jikan_enable")
+    if jikan_enable:
+        if jikan.getboolean("enable_local_address"):
+            jk_local_addr = jikan["local_address"]
+        else:
+            jk_local_addr = False
 
     # facebook settings
     facebook = config["facebook"]
+    fb_enable = facebook.getboolean("facebook_enable")
     fb_access_token = facebook["access_token"]
     fb_page_id = facebook["page_id"]
 except KeyError as e:
