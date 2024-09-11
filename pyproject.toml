@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "random_sakuga"
-version = "1.21.0.dev0"
+version = "1.21.0"
 description = "A Python bot that posts random sakuga to Facebook."
 keywords = ["bot", "facebook", "sakuga", "anime"]
 repository = "https://github.com/TheDL98/RandomSakuga"

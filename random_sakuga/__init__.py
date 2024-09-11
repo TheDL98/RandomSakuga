@@ -14,7 +14,7 @@ import random_sakuga.process as process
 import random_sakuga.options as options
 
 
-version = "V1.21-beta"
+version = "V1.21.0"
 
 # Global variables
 tag_summary_dict = {"version": None, "tags": []}
