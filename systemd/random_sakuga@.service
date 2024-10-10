@@ -1,0 +1,13 @@
+[Unit]
+Description=Start RandomSakuga for %I
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=%i
+WorkingDirectory=~
+ExecStart=/home/%i/.local/bin/random_sakuga --config .config/random_sakuga.ini
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

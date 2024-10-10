@@ -1,0 +1,9 @@
+[Unit]
+Description=Run random_sakuga service daily at 9 AM for %i
+
+[Timer]
+User=%i
+OnCalendar=*-*-* 9:00:00
+
+[Install]
+WantedBy=timers.target
